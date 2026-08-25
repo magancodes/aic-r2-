@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DigitalTwin.ai: opening card</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/nav.css">
+<style>
+:root{--ink:#0B0A0E;--paper:#F5F2FA;--muted:#8f8a9e;--violet:#C77DFF;--red:#FF4D42}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;
+  font-family:Fraunces,Georgia,serif;overflow:hidden}
+.wrap{width:min(760px,92vw);position:relative}
+.row{display:flex;align-items:baseline;gap:18px;margin:14px 0;min-height:1.2em}
+.lbl{font-family:"IBM Plex Mono",monospace;font-size:clamp(10px,1.4vw,12px);letter-spacing:.28em;
+  color:var(--muted);text-transform:uppercase;width:110px;flex:none;opacity:0;transition:opacity .4s}
+.row.on .lbl{opacity:1}
+.val{font-family:Fraunces,Georgia,serif;font-weight:600;color:var(--paper);
+  font-size:clamp(26px,5vw,46px);letter-spacing:-.01em;line-height:1.05}
+.val .cursor{display:inline-block;width:3px;height:.9em;background:var(--paper);
+  vertical-align:-0.08em;margin-left:4px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.val .dim{color:var(--muted);font-weight:400}
+.status .val{color:var(--violet);font-weight:400;font-size:clamp(18px,3vw,26px);font-style:italic}
+.hookline{margin-top:52px;font-style:italic;font-weight:400;color:var(--paper);
+  font-size:clamp(20px,3.6vw,32px);opacity:0;transform:translateY(8px);
+  transition:opacity 1.2s cubic-bezier(.4,0,.2,1),transform 1.2s cubic-bezier(.4,0,.2,1)}
+.hookline.on{opacity:1;transform:none}
+.pulse{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 55%, rgba(255,77,66,.14), transparent 55%);
+  opacity:0;transition:opacity 2.5s ease}
+.pulse.on{opacity:1;animation:breathe 3.2s ease-in-out infinite 2.5s}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.35}}
+.grain{position:fixed;inset:0;pointer-events:none;opacity:.05;
+  background-image:radial-gradient(rgba(255,255,255,.6) .5px, transparent .5px);background-size:3px 3px}
+#restart{position:fixed;bottom:22px;right:24px;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  letter-spacing:.14em;color:var(--muted);background:none;border:1px solid #2A2733;border-radius:99px;
+  padding:7px 14px;cursor:pointer;opacity:.5}
+#restart:hover{opacity:1;color:var(--paper)}
+@media (prefers-reduced-motion:reduce){.cursor{animation:none}.pulse.on{animation:none}}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="pulse" id="pulse"></div>
+
+<div class="wrap">
+  <div class="row" id="r0"><span class="lbl">time</span><span class="val" id="v0"></span></div>
+  <div class="row" id="r1"><span class="lbl">body</span><span class="val" id="v1"></span></div>
+  <div class="row" id="r2"><span class="lbl">station</span><span class="val" id="v2"></span></div>
+  <div class="row status" id="r3"><span class="lbl">status</span><span class="val" id="v3"></span></div>
+  <div class="hookline" id="hook">Nothing looked wrong.</div>
+</div>
+
+<button id="restart">replay</button>
+
+<script>
+const lines=[
+  {row:"r0", el:"v0", text:"8:14:02 AM", speed:75},
+  {row:"r1", el:"v1", text:"4182", speed:110},
+  {row:"r2", el:"v2", text:"3 · weld cell", speed:75},
+  {row:"r3", el:"v3", text:"initiating Station 3 for arrival...", speed:48},
+];
+let timers=[];
+function clearAll(){ timers.forEach(t=>clearTimeout(t)); timers=[];
+  lines.forEach(l=>{document.getElementById(l.el).innerHTML="";document.getElementById(l.row).classList.remove("on");});
+  document.getElementById("hook").classList.remove("on");
+  document.getElementById("pulse").classList.remove("on");
+}
+function typeLine(i, done){
+  const l=lines[i], el=document.getElementById(l.el);
+  document.getElementById(l.row).classList.add("on");
+  el.innerHTML='<span class="txt"></span><span class="cursor"></span>';
+  const txt=el.querySelector(".txt");
+  let k=0;
+  function step(){
+    if(k<=l.text.length){ txt.textContent=l.text.slice(0,k); k++;
+      timers.push(setTimeout(step, l.speed + Math.random()*40));
+    } else {
+      el.querySelector(".cursor").remove();
+      timers.push(setTimeout(done, 420));
+    }
+  }
+  step();
+}
+function play(){
+  clearAll();
+  timers.push(setTimeout(()=>{
+    typeLine(0,()=>typeLine(1,()=>typeLine(2,()=>typeLine(3,()=>{
+      timers.push(setTimeout(()=>{
+        document.getElementById("hook").classList.add("on");
+        timers.push(setTimeout(()=>document.getElementById("pulse").classList.add("on"),1400));
+      },900));
+    }))));
+  },700));
+}
+document.getElementById("restart").onclick=play;
+play();
+</script>
+<script src="../js/nav.js"></script>
+</body>
+</html>

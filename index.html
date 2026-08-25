@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0A0E">
+<title>DigitalTwin.ai · story dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+<div class="scrim" id="scrim" hidden></div>
+<div class="shell">
+  <aside class="rail" id="rail">
+    <div class="brand">
+      <div class="mark">DigitalTwin<em>.ai</em></div>
+      <div class="sub">Live twin story</div>
+    </div>
+    <nav class="nav" id="nav" aria-label="Dashboard sections"></nav>
+    <div class="rail-foot">Swipe or use Back / Next to move between chapters.<br>Each page keeps its original animation.</div>
+  </aside>
+
+  <div class="stage">
+    <header class="topbar">
+      <button type="button" class="menu-btn" id="menu" aria-label="Open chapters" aria-controls="rail" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="titles">
+        <div class="crumb" id="crumb">DigitalTwin.ai</div>
+        <h1 id="heading">The line, <em>as a story.</em></h1>
+      </div>
+      <div class="pager">
+        <button type="button" id="prev">← <span class="lbl">Back</span></button>
+        <button type="button" id="next"><span class="lbl">Next</span> →</button>
+      </div>
+    </header>
+
+    <div class="viewport">
+      <section class="overview" id="overview">
+        <div class="hero">
+          <div class="eyebrow">Five pages · one walkthrough</div>
+          <h2>A plant that looks fine <em>until it isn’t.</em></h2>
+          <p>These scenes were built as standalone explainers. This dashboard keeps them intact and strings them into one path: the opening beat, what the camera actually sees, the live twin, the architecture, and how a line is stood up.</p>
+          <button class="cta" type="button" id="start">Start the story →</button>
+        </div>
+
+        <div class="grid">
+          <article class="card" data-go="opening">
+            <div class="kicker">01 · Opening</div>
+            <h3>Nothing looked <em>wrong.</em></h3>
+            <p>8:14:02 AM. Body 4182. Station 3, weld cell. The status line starts the station for arrival — and the room holds still.</p>
+          </article>
+          <article class="card" data-go="camera">
+            <div class="kicker">02 · Sensing</div>
+            <h3>What the camera <em>actually</em> takes in.</h3>
+            <p>Not video. Two virtual tripwires. A part crossing a line becomes a ~200-byte event. That event is the only thing that leaves the station.</p>
+          </article>
+          <article class="card" data-go="live-twin">
+            <div class="kicker">03 · Live twin</div>
+            <h3>The line, <em>mirrored.</em></h3>
+            <p>Solid is the floor right now. Dashed is the twin twenty seconds ahead. A weld drift and a bottleneck form — the twin catches both first.</p>
+          </article>
+          <article class="card" data-go="architecture">
+            <div class="kicker">04 · Architecture</div>
+            <h3>Four moves, <em>one mirror.</em></h3>
+            <p>Sense, mirror, predict, ask. Events leave the floor, become a living simulation, and come back as a decision. Nothing else in between.</p>
+          </article>
+          <article class="card" data-go="setup">
+            <div class="kicker">05 · Setup</div>
+            <h3>From bare line to <em>living twin.</em></h3>
+            <p>Clip sensors on day one, boot the twin from standard times, then Monte Carlo, in-line QC, dark-station estimates, and a tool-calling copilot.</p>
+          </article>
+        </div>
+      </section>
+
+      <iframe id="frame" title="Story page"></iframe>
+    </div>
+  </div>
+</div>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

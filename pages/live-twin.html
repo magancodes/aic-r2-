@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DigitalTwin.ai: the line, mirrored</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/nav.css">
+<style>
+:root{
+  --paper:#FFFFFF; --ink:#17151C; --muted:#6E6880; --violet:#9D00F5;
+  --wash:#F4EAFE; --red:#D93025; --amber:#F29900; --green:#188038; --line:#E7E3EF;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:44px 20px 60px}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--violet);margin-bottom:14px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(30px,4.6vw,46px);
+  line-height:1.06;text-align:center;letter-spacing:-.01em}
+h1 em{font-style:italic;color:var(--violet)}
+.sub{color:var(--muted);font-size:14px;margin-top:12px;max-width:600px;text-align:center;line-height:1.55}
+.stage{width:min(980px,100%);margin-top:36px;border:1px solid var(--line);border-radius:18px;
+  padding:26px 26px 20px;background:var(--paper)}
+.phase{font-family:Fraunces,Georgia,serif;font-style:italic;font-size:18px;min-height:26px;
+  color:var(--ink);transition:opacity .5s}
+.legendrow{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px}
+.lg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:3px}
+svg.scene{width:100%;height:auto;display:block;margin-top:6px}
+.panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:8px}
+@media(max-width:820px){.panel{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.card h3{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:10px}
+.riskrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+.riskrow .nm{font-size:11.5px;width:24px;color:var(--ink)}
+.riskbar{flex:1;height:8px;background:var(--wash);border-radius:99px;overflow:hidden}
+.riskfill{height:100%;border-radius:99px;background:var(--violet);width:0%;
+  transition:width .5s cubic-bezier(.4,0,.2,1)}
+.riskrow .pc{font-family:"IBM Plex Mono",monospace;font-size:10.5px;width:34px;text-align:right;color:var(--muted)}
+#log{font-family:"IBM Plex Mono",monospace;font-size:10.5px;line-height:1.85;color:var(--muted);
+  height:148px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+#log .hot{color:var(--red)} #log .good{color:var(--green)} #log .tw{color:var(--violet)}
+.alert{margin-top:12px;border-radius:12px;background:var(--wash);border:1px solid #E3CDF9;
+  padding:11px 13px;opacity:0;transform:translateY(6px);transition:all .6s cubic-bezier(.4,0,.2,1)}
+.alert.show{opacity:1;transform:none}
+.alert b{color:var(--violet)}
+.alert .fx{font-size:11.5px;color:var(--ink);line-height:1.5}
+/* defect watch card */
+.wavebox{position:relative;height:96px;margin-top:4px}
+.wavebox .band{position:absolute;left:0;right:0;top:26px;height:40px;background:var(--wash);border-radius:6px}
+.wavebox .bandlbl{position:absolute;left:6px;top:29px;font-family:"IBM Plex Mono",monospace;font-size:8.5px;color:var(--violet)}
+.wavebox svg{position:absolute;inset:0;width:100%;height:100%}
+.wavebox polyline{fill:none;stroke:var(--ink);stroke-width:1.8}
+.dflag{font-family:"IBM Plex Mono",monospace;font-size:10px;padding:4px 8px;border-radius:7px;
+  display:inline-block;margin-top:8px;margin-right:6px;opacity:0;transition:opacity .5s}
+.dflag.show{opacity:1}
+.dflag.if{background:#FDEBD0;color:#8a5a00}
+.dflag.ae{background:#FADBD8;color:var(--red)}
+.dnote{font-size:10.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+.ctrls{display:flex;gap:10px;align-items:center;margin-top:22px}
+button{font-family:Inter,sans-serif;font-size:12.5px;font-weight:500;padding:8px 16px;
+  border-radius:99px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--violet);color:var(--violet)}
+button:focus-visible{outline:2px solid var(--violet);outline-offset:2px}
+#clock{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);margin-left:auto}
+.ghostlabel{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;fill:var(--violet)}
+.reallabel{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.16em;fill:#9a95a8}
+@media (prefers-reduced-motion: reduce){ .riskfill,.alert,.dflag{transition:none} }
+</style>
+</head>
+<body>
+<div class="eyebrow">DigitalTwin.ai · live demonstration</div>
+<h1>The line, <em>mirrored.</em></h1>
+<p class="sub">The solid line below is the floor, right now. The dashed ghost above it is the twin, running the same line <b>20 seconds into the future</b>. Watch two stories at once: a weld signal drifting toward a defect, and a bottleneck forming. The twin catches both before the floor feels either.</p>
+
+<div class="stage">
+  <div class="phase" id="phase">Steady state. Five stations, four-slot buffers, all green. The twin agrees with the floor.</div>
+  <svg class="scene" viewBox="0 0 960 300" id="scene" aria-label="Assembly line simulation"></svg>
+  <div class="legendrow">
+    <span class="lg"><span class="dot" style="background:var(--green)"></span>running</span>
+    <span class="lg"><span class="dot" style="background:var(--red)"></span>slow</span>
+    <span class="lg"><span class="dot" style="background:var(--amber)"></span>starved</span>
+    <span class="lg"><span class="dot" style="background:var(--violet)"></span>buffer fill</span>
+    <span class="lg" style="margin-left:auto">dashed = twin forecast (+20 s) · solid = the floor, now</span>
+  </div>
+
+  <div class="panel">
+    <div class="card">
+      <h3>Defect watch · S3 weld current</h3>
+      <div class="wavebox">
+        <div class="band"></div><div class="bandlbl">normal band</div>
+        <svg viewBox="0 0 300 96" preserveAspectRatio="none"><polyline id="wave" points=""/></svg>
+      </div>
+      <span class="dflag if" id="fIF">Isolation Forest: suspicious</span>
+      <span class="dflag ae" id="fAE">Autoencoder: drift confirmed</span>
+      <div class="dnote">Trained on normal welds only. This drift sits inside classic control limits, which is exactly where SPC charts stay quiet. Alert will be graded against tonight's QC results.</div>
+    </div>
+    <div class="card">
+      <h3>Bottleneck forecast · next 30 s</h3>
+      <div id="risks"></div>
+      <div class="alert" id="alert">
+        <div class="fx"><b>Twin alert.</b> Station 3 is becoming the constraint. S4 and S5 starve in about 20 s. Move: shift one operator, pre-stage buffer at S4.</div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Event log</h3>
+      <div id="log"></div>
+    </div>
+  </div>
+
+  <div class="ctrls">
+    <button id="pp">Pause</button>
+    <button id="rs">Restart</button>
+    <button id="sp">Speed 1x</button>
+    <span id="clock">t = 0 s</span>
+  </div>
+</div>
+
+<script>
+const N=5, CAP=4, DRIFT_AT=15, SLOW_AT=25, HEAL_AT=95, LOOP_AT=150, HORIZON=20;
+const COLORS={busy:"#188038",slow:"#D93025",starved:"#F29900"};
+const svg=document.getElementById("scene");
+const riskEl=document.getElementById("risks"), logEl=document.getElementById("log");
+const phaseEl=document.getElementById("phase"), alertEl=document.getElementById("alert");
+const clockEl=document.getElementById("clock");
+const wave=document.getElementById("wave"), fIF=document.getElementById("fIF"), fAE=document.getElementById("fAE");
+
+function freshState(){return {busy:Array(N).fill(false),timer:Array(N).fill(0),buf:Array(N+1).fill(0)};}
+function ct(i,t,jit){let c=(i===2&&t>=SLOW_AT&&t<HEAL_AT)?9:4;if(jit)c*=(0.85+Math.random()*0.3);return c;}
+function tick(s,t,jit){
+  s.buf[0]=CAP;
+  for(let i=N-1;i>=0;i--){ if(s.busy[i]){ s.timer[i]-=1;
+    if(s.timer[i]<=0){ if(i===N-1||s.buf[i+1]<CAP){ s.busy[i]=false; if(i<N-1)s.buf[i+1]++; } } } }
+  for(let i=0;i<N;i++){ if(!s.busy[i]&&s.buf[i]>0){ s.buf[i]--; s.busy[i]=true; s.timer[i]=ct(i,t,jit); } }
+}
+function stateColors(s,t){ return Array.from({length:N},(_,i)=>{
+  if(i===2&&t>=SLOW_AT&&t<HEAL_AT) return COLORS.slow;
+  return s.busy[i]?COLORS.busy:COLORS.starved; });}
+function clone(s){return {busy:[...s.busy],timer:[...s.timer],buf:[...s.buf]};}
+
+const xs=[110,290,470,650,830], REAL_Y=190, GHOST_Y=70, W=110, H=54;
+let realRects=[],ghostRects=[],realTags=[],bufCells=[];
+function build(){
+  svg.innerHTML="";
+  const mk=(tag,attrs)=>{const e=document.createElementNS("http://www.w3.org/2000/svg",tag);
+    for(const k in attrs)e.setAttribute(k,attrs[k]);svg.appendChild(e);return e;};
+  mk("text",{x:26,y:GHOST_Y-24,class:"ghostlabel"}).textContent="TWIN · FORECAST +20 s";
+  mk("text",{x:26,y:REAL_Y-24,class:"reallabel"}).textContent="PHYSICAL LINE · NOW";
+  for(let i=0;i<N;i++){
+    mk("line",{x1:xs[i],y1:GHOST_Y+H+6,x2:xs[i],y2:REAL_Y-30,stroke:"#EFEAF7","stroke-width":1,"stroke-dasharray":"2 5"});
+  }
+  ghostRects=xs.map(x=>mk("rect",{x:x-W/2,y:GHOST_Y,width:W,height:H,rx:12,fill:"none",
+    stroke:"#9D00F5","stroke-width":2,"stroke-dasharray":"7 6",opacity:.9}));
+  realRects=xs.map(x=>mk("rect",{x:x-W/2,y:REAL_Y,width:W,height:H,rx:12,fill:COLORS.busy}));
+  xs.forEach((x,i)=>{ mk("text",{x:x,y:REAL_Y+26,"text-anchor":"middle",fill:"#fff",
+      "font-family":"Inter","font-weight":"600","font-size":"15"}).textContent="S"+(i+1);
+    realTags.push(mk("text",{x:x,y:REAL_Y+42,"text-anchor":"middle",fill:"#fff",
+      "font-family":"IBM Plex Mono","font-size":"8.5","letter-spacing":".08em"}));
+    mk("text",{x:x,y:GHOST_Y+33,"text-anchor":"middle",fill:"#9D00F5",
+      "font-family":"Inter","font-weight":"600","font-size":"14",opacity:.85}).textContent="S"+(i+1);
+    if(i<N-1){ mk("path",{d:`M ${x+W/2+6} ${REAL_Y+H/2} L ${xs[i+1]-W/2-6} ${REAL_Y+H/2}`,
+        stroke:"#B9B3C6","stroke-width":2,"marker-end":"url(#arr)"});
+      const bx=(x+xs[i+1])/2, cells=[];
+      for(let b=0;b<CAP;b++) cells.push(mk("rect",{x:bx-26+b*14,y:REAL_Y+H+16,width:10,height:20,rx:2.5,fill:"#EFEAF7"}));
+      bufCells.push(cells);
+      mk("text",{x:bx,y:REAL_Y+H+50,"text-anchor":"middle",fill:"#6E6880",
+        "font-family":"IBM Plex Mono","font-size":"9"}).textContent="buffer";
+    }});
+  const defs=mk("defs",{}); defs.innerHTML='<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#B9B3C6"/></marker>';
+}
+function ghostPaint(colors){ ghostRects.forEach((r,i)=>{ r.setAttribute("stroke",colors[i]);
+  r.setAttribute("fill",colors[i]); r.setAttribute("fill-opacity","0.08"); });}
+
+const riskFills=[],riskPcs=[];
+["S1","S2","S3","S4","S5"].forEach(n=>{
+  const row=document.createElement("div");row.className="riskrow";
+  row.innerHTML=`<span class="nm">${n}</span><div class="riskbar"><div class="riskfill"></div></div><span class="pc">0%</span>`;
+  riskEl.appendChild(row); riskFills.push(row.querySelector(".riskfill")); riskPcs.push(row.querySelector(".pc"));});
+function risks(s,t){ const counts=Array(N).fill(0),R=12;
+  for(let r=0;r<R;r++){ const c=clone(s); for(let k=1;k<=30;k++) tick(c,t+k,true);
+    let best=-1,bi=-1; for(let i=1;i<N;i++){ if(c.buf[i]>best){best=c.buf[i];bi=i;} }
+    if(best>=2) counts[bi]++; }
+  return counts.map(c=>Math.round(100*c/R)); }
+
+const fired={};
+function log(t,msg,cls){ const k=t+msg; if(fired[k])return; fired[k]=1;
+  const d=document.createElement("div"); if(cls)d.className=cls;
+  d.textContent=`t=${String(t).padStart(3," ")}s  ${msg}`; logEl.appendChild(d);
+  while(logEl.children.length>8) logEl.removeChild(logEl.firstChild); }
+
+// weld waveform: mean drifts up after DRIFT_AT, back after HEAL
+let wpts=[];
+function pushWave(t){
+  const drift = (t>=DRIFT_AT&&t<HEAL_AT) ? Math.min((t-DRIFT_AT)*1.4,30) : 0;
+  const y = 46 - drift + (Math.random()*14-7);
+  wpts.push(Math.max(6,Math.min(90,y)));
+  if(wpts.length>60)wpts.shift();
+  wave.setAttribute("points", wpts.map((y,i)=>`${i*(300/59)},${y}`).join(" "));
+}
+
+let real,t,timer=null,speed=1,paused=false;
+function reset(){ real=freshState(); t=0; for(const k in fired)delete fired[k];
+  logEl.innerHTML=""; alertEl.classList.remove("show");
+  fIF.classList.remove("show"); fAE.classList.remove("show"); wpts=[];
+  phaseEl.textContent="Steady state. Five stations, four-slot buffers, all green. The twin agrees with the floor.";
+  log(0,"line running · takt 4 s per station","good"); }
+function step(){
+  if(paused)return;
+  tick(real,t,false);
+  pushWave(t);
+  const rc=stateColors(real,t);
+  realRects.forEach((r,i)=>r.setAttribute("fill",rc[i]));
+  realTags.forEach((el,i)=>{ el.textContent = rc[i]===COLORS.slow?"SLOW":(rc[i]===COLORS.starved?"STARVED":"RUNNING"); });
+  bufCells.forEach((cells,i)=>cells.forEach((c,b)=>c.setAttribute("fill", b<real.buf[i+1] ? "#9D00F5":"#EFEAF7")));
+  const g=clone(real); for(let k=1;k<=HORIZON;k++) tick(g,t+k,false);
+  ghostPaint(stateColors(g,t+HORIZON));
+  const R=risks(real,t);
+  R.forEach((p,i)=>{riskFills[i].style.width=p+"%";
+    riskFills[i].style.background = p>=60?"#D93025":(p>=25?"#F29900":"#9D00F5");
+    riskPcs[i].textContent=p+"%";});
+  // story beats
+  if(t===DRIFT_AT){ phaseEl.textContent="S3's weld current starts creeping. Still inside control limits, so a normal SPC chart stays quiet.";
+    log(t,"S3 weld current drifting upward","hot"); }
+  if(t===DRIFT_AT+5){ fIF.classList.add("show"); log(t,"Isolation Forest: S3 signal suspicious","tw"); }
+  if(t===DRIFT_AT+8){ fAE.classList.add("show"); log(t,"autoencoder confirms drift · defect risk","tw"); }
+  if(t===SLOW_AT){ phaseEl.textContent="The drift becomes real: S3 slows to 9 s per part. The floor cannot see it yet. The ghost already can.";
+    log(t,"S3 cycle time 4s to 9s","hot"); }
+  if(R[2]>=60 && t>SLOW_AT && t<HEAL_AT){ alertEl.classList.add("show");
+    log(t,"twin ALERT: S3 becoming bottleneck, act now","tw"); }
+  if(t===48){ phaseEl.textContent="Reality catches up: S4 and S5 starve, exactly as the ghost showed 20 seconds earlier."; }
+  if(t===HEAL_AT){ phaseEl.textContent="Weld cell re-tuned, operator shifted. The ghost turns green first. The floor follows.";
+    log(t,"S3 re-tuned · back to 4 s","good"); alertEl.classList.remove("show");
+    fIF.classList.remove("show"); fAE.classList.remove("show"); }
+  if(t===HEAL_AT+18){ log(t,"caught at the station, not at end of line","good"); }
+  if(t===HEAL_AT+22){ log(t,"rule of ten: fix cost stayed 1x, not 10x","good"); }
+  clockEl.textContent="t = "+t+" s";
+  t++; if(t>LOOP_AT){ reset(); }
+}
+function run(){ if(timer)clearInterval(timer); timer=setInterval(step,320/speed); }
+document.getElementById("pp").onclick=e=>{paused=!paused;e.target.textContent=paused?"Play":"Pause";};
+document.getElementById("rs").onclick=()=>{reset();};
+document.getElementById("sp").onclick=e=>{speed=speed===1?2:1;e.target.textContent="Speed "+speed+"x";run();};
+build(); reset(); run();
+</script>
+<script src="../js/nav.js"></script>
+</body>
+</html>

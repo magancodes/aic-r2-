@@ -1,6 +1,27 @@
-# DigitalTwin.ai — Round 2 prototype
+# DigitalTwin.ai
 
-Sensor-poor assembly-line digital twin. Two programs, one contract:
+Two deliverables in one repo:
+
+1. **Story dashboard** (Round 1) — static walkthrough at the repo root (`index.html`, `pages/`, `css/`, `js/`). Deployed on [Vercel](https://waterpark-enthusiasts-digital-twin.vercel.app).
+2. **Round 2 prototype** (v0.7.0) — sensor-poor assembly-line digital twin engine.
+
+## Story dashboard (local)
+
+Open `index.html` in a browser, or:
+
+```bash
+python -m http.server 8765
+```
+
+Then visit http://127.0.0.1:8765/
+
+### Deploy on Vercel
+
+Static site — no build step, no environment variables. Import this repo at [vercel.com/new](https://vercel.com/new); `vercel.json` sets framework to none.
+
+## Round 2 prototype
+
+Two programs, one contract:
 
 - `plant/` — synthetic factory (ground truth)
 - `twin/` — estimator (events + layout only)
@@ -8,11 +29,7 @@ Sensor-poor assembly-line digital twin. Two programs, one contract:
 - `lib/` — shared serial-line mechanics
 - `ui/` — chapter 06 interactive demo
 
-## Version
-
 Current release: **0.7.0** (Days 1–7). See [CHANGELOG.md](CHANGELOG.md).
-
-## Run
 
 ```bash
 bash run_all.sh          # full suite
