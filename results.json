@@ -1,0 +1,201 @@
+{
+  "generatedAt": "2026-08-22T04:10:08.045Z",
+  "seed": 20260822,
+  "day1": {
+    "throughput_u_per_h": 62.11,
+    "effectiveTakt_s": 57.96,
+    "targetTakt_s": 55,
+    "welds": 732125,
+    "defectRate_pct": 0.336,
+    "caught": 2211,
+    "escaped": 251,
+    "darkLeaks": 0,
+    "taktDrift_pct": 3.02,
+    "runtime_s": 0.33,
+    "reproducible": true
+  },
+  "day2": {
+    "reps": 40,
+    "medianBlindUnits": 42.5,
+    "blindRange": [
+      0,
+      260
+    ],
+    "medianCarrierUnits": 14.5,
+    "carrierRange": [
+      0,
+      117
+    ],
+    "medianLatency_min": 43.5
+  },
+  "day3": {
+    "util": {
+      "top": "S22",
+      "topPct": 99.79,
+      "topSd": 0.33,
+      "second": "S28",
+      "secondPct": 97.74,
+      "secondSd": 1.38,
+      "sigmaGap": 1.44
+    },
+    "apm": {
+      "top": "S22",
+      "avgActive_s": 12663.7
+    },
+    "shifting": {
+      "S19": {
+        "station": "S19",
+        "solePct": 0,
+        "shiftingPct": 5.475763730164789,
+        "totalPct": 5.475763730164789
+      },
+      "S22": {
+        "station": "S22",
+        "solePct": 60.07462138138195,
+        "shiftingPct": 21.686055727059873,
+        "totalPct": 81.76067710844184
+      },
+      "S28": {
+        "station": "S28",
+        "solePct": 8.22372026603051,
+        "shiftingPct": 13.667053405153393,
+        "totalPct": 21.890773671183904
+      }
+    }
+  },
+  "day4_leadtime": {
+    "n": 40,
+    "medianMin": 11.959602414429021,
+    "meanMin": 12.851046180186108,
+    "p10Min": 11.006694036860177,
+    "p90Min": 16.280639358551408,
+    "censored": 0,
+    "target": "S25"
+  },
+  "day5_detectors": {
+    "roc_auc": {
+      "combined": 0.9866,
+      "iforest": 0.9866,
+      "ae": 0.9368,
+      "spc": 0.9831
+    },
+    "operating": {
+      "tp": 8,
+      "fp": 103,
+      "fn": 4,
+      "tn": 17405,
+      "precision": 0.0721,
+      "recall": 0.6667,
+      "far": 0.0059,
+      "falseAlarmsPerHour": 18.39
+    },
+    "spc_baseline": {
+      "tp": 0,
+      "fp": 13,
+      "fn": 12,
+      "precision": 0,
+      "recall": 0,
+      "far": 0.0007
+    },
+    "beatsSPC": true,
+    "defects": 12,
+    "alerts": 111
+  },
+  "day6_virtual": {
+    "n": 40,
+    "overallCoverage80": 0.8042,
+    "overallPct": 80.4,
+    "sentence": "the 80% band covered truth 80.4% of the time over 40 runs",
+    "voiTop5": [
+      {
+        "station": "S20",
+        "run": [
+          "S20",
+          "S21"
+        ],
+        "varianceMu": 346.83359117569756,
+        "voi": 1529.412549699728,
+        "meanCT": 50.26782462259726,
+        "ci80": [
+          26.400888990608458,
+          74.13476025458607
+        ],
+        "trust": 0.030118776831543424
+      },
+      {
+        "station": "S21",
+        "run": [
+          "S20",
+          "S21"
+        ],
+        "varianceMu": 346.83359117569756,
+        "voi": 1529.412549699728,
+        "meanCT": 50.26782462259726,
+        "ci80": [
+          26.400888990608458,
+          74.13476025458607
+        ],
+        "trust": 0.030118776831543424
+      },
+      {
+        "station": "S13",
+        "run": [
+          "S13",
+          "S14",
+          "S15"
+        ],
+        "varianceMu": 1.961891412160396,
+        "voi": 3.269819020267327,
+        "meanCT": 50.02411933768259,
+        "ci80": [
+          48.22908166102108,
+          51.81915701434411
+        ],
+        "trust": 1
+      },
+      {
+        "station": "S14",
+        "run": [
+          "S13",
+          "S14",
+          "S15"
+        ],
+        "varianceMu": 1.961891412160396,
+        "voi": 3.269819020267327,
+        "meanCT": 50.02411933768259,
+        "ci80": [
+          48.22908166102108,
+          51.81915701434411
+        ],
+        "trust": 1
+      },
+      {
+        "station": "S15",
+        "run": [
+          "S13",
+          "S14",
+          "S15"
+        ],
+        "varianceMu": 1.961891412160396,
+        "voi": 3.269819020267327,
+        "meanCT": 50.02411933768259,
+        "ci80": [
+          48.22908166102108,
+          51.81915701434411
+        ],
+        "trust": 1
+      }
+    ]
+  },
+  "day7_apm": {
+    "target": "S22",
+    "solePct": 55.648,
+    "totalPct": 77.334,
+    "predictedBand_s": {
+      "lower": 0.5565,
+      "upper": 0.7733
+    },
+    "meanGain_s": 0.7975,
+    "validated": true
+  }
+}

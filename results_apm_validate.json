@@ -1,0 +1,27 @@
+{
+  "target": "S22",
+  "apmTop": "S22",
+  "bind_s": 8,
+  "solePct": 55.648,
+  "shiftingPct": 21.686,
+  "totalPct": 77.334,
+  "ds_s": 1,
+  "predictedBand_s": {
+    "lower": 0.5565,
+    "upper": 0.7733
+  },
+  "reps": 8,
+  "meanGain_s": 0.7975,
+  "gains_s": [
+    1.0016,
+    0.5351,
+    0.8669,
+    0.1259,
+    0.6818,
+    0.8146,
+    1.5688,
+    0.7852
+  ],
+  "strictInsideRate": 0.125,
+  "validated": true
+}

@@ -1,0 +1,14 @@
+node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+!.env.example
+.vercel
+dist/
+coverage/
+*.tmp
+_probe*.js
+_tune*.js
+_debug*.js

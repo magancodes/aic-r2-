@@ -1,0 +1,38 @@
+{
+  "units": 320,
+  "accelAt": 140,
+  "trainWelds": 11120,
+  "testWelds": 17520,
+  "defects": 12,
+  "alerts": 111,
+  "thresholds": {
+    "iforest": 0.6470171409241293,
+    "ae": 0.30368531846797703,
+    "spc": 3.5
+  },
+  "roc_auc": {
+    "combined": 0.9866,
+    "iforest": 0.9866,
+    "ae": 0.9368,
+    "spc": 0.9831
+  },
+  "operating": {
+    "tp": 8,
+    "fp": 103,
+    "fn": 4,
+    "tn": 17405,
+    "precision": 0.0721,
+    "recall": 0.6667,
+    "far": 0.0059,
+    "falseAlarmsPerHour": 18.39
+  },
+  "spc_baseline": {
+    "tp": 0,
+    "fp": 13,
+    "fn": 12,
+    "precision": 0,
+    "recall": 0,
+    "far": 0.0007
+  },
+  "beatsSPC": true
+}

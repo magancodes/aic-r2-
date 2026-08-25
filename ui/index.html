@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DigitalTwin.ai — Drive it yourself</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <header class="top">
+    <div class="brand">DigitalTwin.ai</div>
+    <nav class="personas" role="tablist" aria-label="Persona">
+      <button type="button" class="persona is-active" data-persona="supervisor" role="tab" aria-selected="true">Supervisor</button>
+      <button type="button" class="persona" data-persona="manager" role="tab" aria-selected="false">Plant manager</button>
+      <button type="button" class="persona" data-persona="leadership" role="tab" aria-selected="false">Leadership</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="eyebrow">Chapter 06</p>
+      <h1>Drive it yourself</h1>
+      <p class="lede">Sensor-poor line. Real estimators. No oracle.</p>
+      <div class="cta-row">
+        <button type="button" id="btn-run" class="btn primary">Run shift</button>
+        <button type="button" id="btn-pause" class="btn ghost">Pause</button>
+      </div>
+    </section>
+
+    <section class="controls" aria-label="Line controls">
+      <label>
+        <span>Drift rate</span>
+        <input id="drift" type="range" min="0" max="20" value="8" />
+        <output id="drift-out">8</output>
+      </label>
+      <label>
+        <span>Sensor coverage</span>
+        <input id="coverage" type="range" min="40" max="100" value="70" />
+        <output id="coverage-out">70%</output>
+      </label>
+      <label>
+        <span>Buffer size</span>
+        <input id="buffer" type="range" min="1" max="8" value="4" />
+        <output id="buffer-out">4</output>
+      </label>
+    </section>
+
+    <section class="stage">
+      <div class="line" id="line" aria-label="Station strip"></div>
+      <div class="panels">
+        <article class="panel" data-show="supervisor manager">
+          <h2>Momentary bottleneck</h2>
+          <p class="metric" id="bn-now">—</p>
+          <p class="sub" id="bn-sub">waiting for events</p>
+        </article>
+        <article class="panel" data-show="supervisor manager leadership">
+          <h2>Forecast <span class="muted">30 min</span></h2>
+          <div class="bars" id="forecast-bars"></div>
+        </article>
+        <article class="panel" data-show="supervisor">
+          <h2>Alert queue</h2>
+          <ul class="alerts" id="alerts"></ul>
+          <p class="action" id="action">Recommended: —</p>
+        </article>
+        <article class="panel" data-show="manager">
+          <h2>Bottleneck migration</h2>
+          <div class="migrate" id="migrate"></div>
+          <h2 class="spaced">Sensor ROI</h2>
+          <ol class="voi" id="voi"></ol>
+        </article>
+        <article class="panel" data-show="manager leadership">
+          <h2>Calibration</h2>
+          <p class="metric" id="calib">—</p>
+          <p class="sub" id="calib-sub">80% band coverage of dark CT</p>
+        </article>
+        <article class="panel" data-show="leadership">
+          <h2>Payback curve</h2>
+          <canvas id="payback" width="640" height="220" aria-label="Payback chart"></canvas>
+          <p class="sub">Multi-line extension assumes same FAR and lead time.</p>
+        </article>
+        <article class="panel" data-show="leadership manager">
+          <h2>OEE trend</h2>
+          <canvas id="oee" width="640" height="180" aria-label="OEE chart"></canvas>
+        </article>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p>
+        Measured claims are from <code>results.json</code> (harness). The live strip is an interactive
+        driver for personas — alert animation is labelled mockup unless wired to a streamed twin.
+      </p>
+      <pre id="results-snip">loading results…</pre>
+    </footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
