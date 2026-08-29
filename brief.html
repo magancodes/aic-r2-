@@ -1,0 +1,565 @@
+<title>DigitalTwin.ai Project Dossier</title>
+<meta name="description" content="A mentor-facing walkthrough of the sensor-poor assembly-line digital twin: the brief, the architecture, the seven-day build, and every deliverable.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F4F1FA; --surface:#FFFFFF; --surface-2:#EEE9F7; --sunken:#F7F4FC;
+    --ink:#171320; --muted:#645C74; --faint:#E3DCF0; --hair:#D8D0E8;
+    --accent:#7A00C2; --accent-strong:#9D00F5; --accent-soft:#F0E2FC;
+    --good:#0F8A55; --good-soft:#E0F3EA;
+    --warn:#9A6410; --warn-soft:#F7ECD8;
+    --bad:#BE304F; --bad-soft:#FBE3E9;
+    --shadow:0 1px 2px rgba(23,19,32,.05), 0 8px 30px -18px rgba(23,19,32,.25);
+    --step:clamp(1rem,.85rem + .6vw,1.2rem);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#0B0A0E; --surface:#141119; --surface-2:#1B1723; --sunken:#100D15;
+      --ink:#F1EEF7; --muted:#9E97AE; --faint:#2A2633; --hair:#332E40;
+      --accent:#C77DFF; --accent-strong:#B24DFF; --accent-soft:#241631;
+      --good:#4ADE9E; --good-soft:#12241C;
+      --warn:#F0B357; --warn-soft:#2A2113;
+      --bad:#FF6B8A; --bad-soft:#2C141B;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 20px 50px -30px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0B0A0E; --surface:#141119; --surface-2:#1B1723; --sunken:#100D15;
+    --ink:#F1EEF7; --muted:#9E97AE; --faint:#2A2633; --hair:#332E40;
+    --accent:#C77DFF; --accent-strong:#B24DFF; --accent-soft:#241631;
+    --good:#4ADE9E; --good-soft:#12241C;
+    --warn:#F0B357; --warn-soft:#2A2113;
+    --bad:#FF6B8A; --bad-soft:#2C141B;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 20px 50px -30px rgba(0,0,0,.8);
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:Inter,system-ui,-apple-system,sans-serif;
+    font-size:var(--step); line-height:1.6; margin:0;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 clamp(18px,4vw,40px)}
+  .measure{max-width:70ch}
+  h1,h2,h3{font-family:Fraunces,Georgia,serif;font-weight:600;text-wrap:balance;line-height:1.12;letter-spacing:-.01em}
+  h1 em,h2 em,h3 em{font-style:italic;color:var(--accent)}
+  a{color:var(--accent);text-decoration-thickness:1px;text-underline-offset:2px}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+  code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:500}
+
+  /* ---- top bar ---- */
+  header.bar{
+    position:sticky;top:0;z-index:50;
+    background:color-mix(in srgb,var(--bg) 86%,transparent);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--faint);
+  }
+  .bar .wrap{display:flex;align-items:center;gap:14px;height:56px}
+  .bar .logo{font-family:Fraunces,serif;font-weight:600;font-size:15px}
+  .bar .logo em{font-style:italic;color:var(--accent)}
+  .bar .sp{flex:1}
+  .bar .pill{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+    padding:5px 10px;border-radius:99px;background:var(--good-soft);color:var(--good);border:1px solid color-mix(in srgb,var(--good) 30%,transparent);white-space:nowrap}
+  .toggle{font-family:"IBM Plex Mono",monospace;font-size:11px;cursor:pointer;color:var(--muted);
+    background:var(--surface-2);border:1px solid var(--faint);border-radius:99px;padding:6px 12px;min-height:34px}
+  .toggle:hover{color:var(--ink);border-color:var(--hair)}
+
+  /* ---- hero ---- */
+  .hero{padding:clamp(48px,8vw,96px) 0 clamp(30px,5vw,52px)}
+  .hero h1{font-size:clamp(2.6rem,1.6rem + 4.4vw,5rem);margin:.28em 0 .1em}
+  .hero .lede{font-size:clamp(1.15rem,1rem + .6vw,1.45rem);color:var(--muted);max-width:60ch;margin:.6em 0 0}
+  .hero .lede b{color:var(--ink);font-weight:600}
+  .metastrip{display:flex;flex-wrap:wrap;gap:8px;margin-top:28px}
+  .chip{font-family:"IBM Plex Mono",monospace;font-size:11.5px;padding:6px 11px;border-radius:8px;
+    background:var(--surface);border:1px solid var(--faint);color:var(--muted)}
+  .chip b{color:var(--ink);font-weight:600}
+
+  /* ---- section rhythm ---- */
+  section{padding:clamp(34px,6vw,66px) 0;border-top:1px solid var(--faint)}
+  section > .wrap > .eyebrow{display:block;margin-bottom:10px}
+  h2{font-size:clamp(1.7rem,1.3rem + 1.6vw,2.5rem);margin:0 0 .5em}
+  h3{font-size:1.15rem;margin:0 0 .35em}
+  p{margin:0 0 1em}
+  .lead{font-size:1.08em}
+  .note{color:var(--muted)}
+
+  /* ---- TOC ---- */
+  .toc{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:2px;
+    background:var(--faint);border:1px solid var(--faint);border-radius:14px;overflow:hidden}
+  .toc a{display:flex;gap:12px;align-items:baseline;padding:14px 16px;background:var(--surface);color:var(--ink);text-decoration:none}
+  .toc a:hover{background:var(--surface-2)}
+  .toc a .n{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent)}
+  .toc a .t{font-weight:500;font-size:.95rem}
+
+  /* ---- callout ---- */
+  .callout{border:1px solid var(--hair);border-left:3px solid var(--accent);
+    background:var(--surface);border-radius:12px;padding:20px 22px;margin:22px 0;box-shadow:var(--shadow)}
+  .callout .eyebrow{margin-bottom:8px}
+  .callout.good{border-left-color:var(--good)}
+  .callout.warn{border-left-color:var(--warn)}
+
+  /* ---- requirement list ---- */
+  .reqs{list-style:none;padding:0;margin:22px 0 0;display:grid;gap:12px}
+  .reqs li{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;
+    background:var(--surface);border:1px solid var(--faint);border-radius:12px;padding:16px 18px}
+  .reqs .k{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--accent-strong);
+    background:var(--accent-soft);border-radius:6px;padding:4px 8px;white-space:nowrap}
+  .reqs b{font-weight:600}
+
+  /* ---- architecture diagram ---- */
+  .diagram{background:var(--sunken);border:1px solid var(--faint);border-radius:16px;padding:clamp(16px,3vw,30px);margin:8px 0 4px;overflow-x:auto}
+  .diagram svg{display:block;width:100%;min-width:620px;height:auto}
+  .legend{display:flex;flex-wrap:wrap;gap:16px;margin-top:14px;font-size:13px;color:var(--muted)}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+  /* ---- station strip ---- */
+  .strip{display:flex;gap:3px;flex-wrap:wrap;margin:18px 0 6px}
+  .strip .st{width:20px;height:26px;border-radius:3px;background:var(--surface-2);border:1px solid var(--faint);
+    display:flex;align-items:center;justify-content:center;font-family:"IBM Plex Mono",monospace;font-size:8px;color:var(--muted)}
+  .strip .st.dark{background:transparent;border-style:dashed;color:color-mix(in srgb,var(--muted) 55%,transparent)}
+  .strip .st.hot{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong);font-weight:600}
+  .strip .st.slow{background:var(--warn-soft);border-color:var(--warn);color:var(--warn);font-weight:600}
+
+  /* ---- day timeline ---- */
+  .days{display:grid;gap:16px;counter-reset:day}
+  .day{background:var(--surface);border:1px solid var(--faint);border-radius:14px;padding:22px 22px 20px;box-shadow:var(--shadow);position:relative}
+  .day .head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+  .day .num{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--accent);border:1px solid var(--faint);border-radius:99px;padding:3px 10px}
+  .day h3{margin:0;font-size:1.22rem}
+  .day .gm{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px 26px;margin-top:6px}
+  .day .gm>div>span{display:block;font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .day .gm>div>p{margin:0;font-size:.96rem}
+  .day .result{margin-top:14px;padding-top:14px;border-top:1px dashed var(--hair);display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+  .day .result .metric{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--ink);font-size:1.05rem;font-variant-numeric:tabular-nums}
+  .day .result .verdict{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--good-soft);color:var(--good)}
+
+  /* ---- KPI grid ---- */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:6px}
+  .kpi{background:var(--surface);border:1px solid var(--faint);border-radius:12px;padding:18px}
+  .kpi .v{font-family:Fraunces,serif;font-weight:600;font-size:2rem;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .kpi .v small{font-size:.9rem;color:var(--muted);font-family:"IBM Plex Mono",monospace;font-weight:400}
+  .kpi .l{font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.4}
+
+  /* ---- before/after ---- */
+  .ba{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+  @media(max-width:640px){.ba{grid-template-columns:1fr}}
+  .ba .col{border-radius:12px;padding:18px 20px;border:1px solid var(--faint)}
+  .ba .before{background:var(--bad-soft);border-color:color-mix(in srgb,var(--bad) 32%,transparent)}
+  .ba .after{background:var(--good-soft);border-color:color-mix(in srgb,var(--good) 32%,transparent)}
+  .ba h4{margin:0 0 10px;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+  .ba .before h4{color:var(--bad)} .ba .after h4{color:var(--good)}
+  .ba p{margin:0 0 .5em;font-size:.95rem}
+  .ba .big{font-family:Fraunces,serif;font-size:1.5rem;font-weight:600;font-variant-numeric:tabular-nums}
+
+  /* ---- deliverable cards ---- */
+  .deliv{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:6px}
+  @media(max-width:760px){.deliv{grid-template-columns:1fr}}
+  .dcard{background:var(--surface);border:1px solid var(--faint);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
+  .dcard .tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent)}
+  .dcard h3{margin:.5em 0 .3em;font-size:1.3rem}
+  .dcard ul{margin:.6em 0 0;padding-left:1.1em}
+  .dcard li{margin:.3em 0;font-size:.95rem}
+
+  /* ---- file map ---- */
+  .tree{background:var(--sunken);border:1px solid var(--faint);border-radius:12px;padding:18px 20px;overflow-x:auto}
+  .tree pre{margin:0;font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.75;color:var(--ink)}
+  .tree .c{color:var(--muted)}
+  .tree .a{color:var(--accent)}
+
+  /* ---- run commands ---- */
+  .cmd{background:var(--sunken);border:1px solid var(--faint);border-radius:10px;padding:4px 0;margin:14px 0}
+  .cmd .row{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:11px 18px}
+  .cmd .row+.row{border-top:1px solid var(--faint)}
+  .cmd code{font-size:13px;color:var(--ink)}
+  .cmd .row span{font-size:12px;color:var(--muted);text-align:right}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:680px){.split{grid-template-columns:1fr}}
+  .box{background:var(--surface);border:1px solid var(--faint);border-radius:12px;padding:18px 20px}
+  .box h3{font-size:1rem}
+  .box.warn{border-left:3px solid var(--warn)}
+  ul.tick{list-style:none;padding:0;margin:0;display:grid;gap:9px}
+  ul.tick li{display:grid;grid-template-columns:auto 1fr;gap:10px;font-size:.95rem}
+  ul.tick li::before{content:"→";color:var(--accent);font-family:"IBM Plex Mono",monospace}
+
+  footer{border-top:1px solid var(--faint);padding:34px 0 60px;color:var(--muted);font-size:13px}
+  footer .wrap{display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between;align-items:center}
+</style>
+
+<header class="bar">
+  <div class="wrap">
+    <div class="logo">DigitalTwin<em>.ai</em></div>
+    <span class="pill">v0.7.1 · all stages pass</span>
+    <div class="sp"></div>
+    <button class="toggle" id="tg" type="button" aria-label="Toggle color theme">theme</button>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Round 2 prototype · project dossier</span>
+    <h1>A factory that looks fine <em>until it isn't</em> — and a twin that sees it first.</h1>
+    <p class="lede">A <b>sensor-poor assembly-line digital twin</b>: a synthetic plant that hides its own physics, an estimator allowed to see <b>only events and layout</b>, and a referee that is the one component permitted to grade them against the truth. Built and measured over seven days.</p>
+    <div class="metastrip">
+      <span class="chip"><b>40</b> stations · <b>12</b> dark</span>
+      <span class="chip">seed <b>20260822</b></span>
+      <span class="chip"><b>0</b> runtime dependencies</span>
+      <span class="chip">~<b>4,400</b> lines</span>
+      <span class="chip">reproducible <b>✓</b></span>
+    </div>
+  </div>
+</div>
+
+<section style="border-top:none;padding-top:6px">
+  <div class="wrap">
+    <div class="callout">
+      <span class="eyebrow">The one-paragraph version</span>
+      <p style="margin:0" class="lead">Real plants are <em>under-instrumented</em>: a wear fault can build scrap for the better part of an hour before anyone sees it. This project builds the whole loop end-to-end — a believable factory, an estimator kept deliberately blind to the factory's hidden state, and a scoring harness — then answers four operational questions with measured, reproducible numbers: <b>where is the bottleneck</b>, <b>is it about to move</b>, <b>which welds are going bad</b>, and <b>what can't we see at all</b>. Every figure on this page is emitted by the test suite into <code>results.json</code>.</p>
+    </div>
+    <nav class="toc" aria-label="Contents">
+      <a href="#brief"><span class="n">01</span><span class="t">The brief &amp; requirements</span></a>
+      <a href="#arch"><span class="n">02</span><span class="t">System architecture</span></a>
+      <a href="#build"><span class="n">03</span><span class="t">The seven-day build</span></a>
+      <a href="#results"><span class="n">04</span><span class="t">Headline results</span></a>
+      <a href="#rigor"><span class="n">05</span><span class="t">The honesty &amp; rigor pass</span></a>
+      <a href="#deliverables"><span class="n">06</span><span class="t">Deliverables</span></a>
+      <a href="#run"><span class="n">07</span><span class="t">Run, reproduce, deploy</span></a>
+      <a href="#mentor"><span class="n">08</span><span class="t">Notes for reviewers</span></a>
+    </nav>
+  </div>
+</section>
+
+<section id="brief">
+  <div class="wrap">
+    <span class="eyebrow">01 · The brief</span>
+    <h2>What the project had to <em>prove</em>.</h2>
+    <p class="measure lead">There is no separate spec sheet — the requirements are the design contract the build was held to, and they are enforced in code (an isolation gate) and in a scoring harness. Reconstructed plainly:</p>
+    <ul class="reqs">
+      <li><span class="k">R1 · realism</span><div><b>A believable factory.</b> A synthetic assembly line whose behaviour — cycle-time variation, electrode wear, lot-to-lot fit-up, random faults, in-line inspection — is rich enough that estimating it is a real problem, and <b>reproducible</b> bit-for-bit from a seed.</div></li>
+      <li><span class="k">R2 · isolation</span><div><b>The twin stays blind.</b> The estimator may consume <b>only the event stream and the line layout</b> — never the plant's hidden physics or ground truth. This is the central rule; it is enforced automatically before every run.</div></li>
+      <li><span class="k">R3 · sensor-poor</span><div><b>Work under real gaps.</b> 12 of 40 stations emit nothing at all ("dark"), and there is no in-process weld-quality sensor — the twin must reason through the gaps, not around them.</div></li>
+      <li><span class="k">R4 · decisions</span><div><b>Answer operational questions</b>, each with a falsifiable exit test: locate the bottleneck, forecast it before it moves, catch welds going bad in-process, and put calibrated numbers on the stations nobody can see.</div></li>
+      <li><span class="k">R5 · honesty</span><div><b>Numbers over narrative.</b> Every quoted figure must come from the harness output, baselines must be beaten on their own terms, and metrics must not flatter the result.</div></li>
+    </ul>
+  </div>
+</section>
+
+<section id="arch">
+  <div class="wrap">
+    <span class="eyebrow">02 · Architecture</span>
+    <h2>Three programs, one <em>contract</em>.</h2>
+    <p class="measure lead">The plant knows everything and emits little. The twin sees only what leaves the floor. The harness is the sole component allowed to look at both sides — so any score is honest by construction.</p>
+
+    <div class="diagram" role="img" aria-label="Plant emits ~200-byte events across an isolation boundary to the blind twin; a harness spans both to score the twin against ground truth; a shared serial-line library is used by both.">
+      <svg viewBox="0 0 900 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="var(--accent)"/></marker>
+        </defs>
+        <!-- plant -->
+        <rect x="24" y="70" width="230" height="150" rx="14" fill="var(--surface)" stroke="var(--hair)"/>
+        <text x="44" y="102" font-family="'IBM Plex Mono',monospace" font-size="12" fill="var(--accent-strong)">plant/</text>
+        <text x="44" y="128" font-family="Fraunces,serif" font-size="20" font-weight="600" fill="var(--ink)">The factory</text>
+        <text x="44" y="152" font-family="Inter,sans-serif" font-size="12.5" fill="var(--muted)">Ground truth. Knows tip</text>
+        <text x="44" y="170" font-family="Inter,sans-serif" font-size="12.5" fill="var(--muted)">wear, nugget size, faults.</text>
+        <text x="44" y="196" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--muted)">kernel · weld · degradation</text>
+        <!-- isolation wall -->
+        <line x1="330" y1="34" x2="330" y2="248" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text x="330" y="24" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" letter-spacing="1.5" fill="var(--accent)">ISOLATION</text>
+        <!-- event packet -->
+        <rect x="266" y="122" width="128" height="46" rx="9" fill="var(--accent-soft)" stroke="var(--accent)"/>
+        <text x="330" y="141" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="var(--accent-strong)">~200-byte</text>
+        <text x="330" y="157" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="var(--accent-strong)">events</text>
+        <line x1="254" y1="145" x2="264" y2="145" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <line x1="396" y1="145" x2="440" y2="145" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#ar)"/>
+        <!-- twin -->
+        <rect x="446" y="70" width="230" height="150" rx="14" fill="var(--surface)" stroke="var(--hair)"/>
+        <text x="466" y="102" font-family="'IBM Plex Mono',monospace" font-size="12" fill="var(--accent-strong)">twin/</text>
+        <text x="466" y="128" font-family="Fraunces,serif" font-size="20" font-weight="600" fill="var(--ink)">The estimator</text>
+        <text x="466" y="152" font-family="Inter,sans-serif" font-size="12.5" fill="var(--muted)">Blind. Events + layout only.</text>
+        <text x="466" y="170" font-family="Inter,sans-serif" font-size="12.5" fill="var(--muted)">Bayesian belief, forecast,</text>
+        <text x="466" y="196" font-family="'IBM Plex Mono',monospace" font-size="11" fill="var(--muted)">belief · forecast · detect · virtual</text>
+        <!-- harness -->
+        <rect x="24" y="244" width="652" height="44" rx="11" fill="var(--sunken)" stroke="var(--accent)" stroke-dasharray="3 3"/>
+        <text x="44" y="271" font-family="'IBM Plex Mono',monospace" font-size="12" fill="var(--accent-strong)">harness/</text>
+        <text x="150" y="271" font-family="Inter,sans-serif" font-size="13" fill="var(--ink)">the referee — the only code that sees plant <tspan font-family="'IBM Plex Mono',monospace" fill="var(--muted)">and</tspan> twin, and scores one against the other</text>
+        <line x1="139" y1="220" x2="139" y2="243" stroke="var(--hair)" stroke-width="1.2"/>
+        <line x1="561" y1="220" x2="561" y2="243" stroke="var(--hair)" stroke-width="1.2"/>
+        <!-- lib -->
+        <rect x="702" y="70" width="174" height="150" rx="14" fill="var(--surface)" stroke="var(--hair)"/>
+        <text x="720" y="102" font-family="'IBM Plex Mono',monospace" font-size="12" fill="var(--accent-strong)">lib/</text>
+        <text x="720" y="128" font-family="Fraunces,serif" font-size="17" font-weight="600" fill="var(--ink)">Shared line</text>
+        <text x="720" y="151" font-family="Inter,sans-serif" font-size="12" fill="var(--muted)">Serial-line physics</text>
+        <text x="720" y="168" font-family="Inter,sans-serif" font-size="12" fill="var(--muted)">&amp; seeded RNG, used</text>
+        <text x="720" y="185" font-family="Inter,sans-serif" font-size="12" fill="var(--muted)">by both sides.</text>
+      </svg>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--surface);border:1px solid var(--hair)"></i>program</span>
+      <span><i style="background:var(--accent-soft);border:1px solid var(--accent)"></i>the only channel across the wall</span>
+      <span><i style="border:1px dashed var(--accent);background:transparent"></i>isolation boundary / referee</span>
+    </div>
+
+    <p class="measure" style="margin-top:26px"><b>The line itself.</b> 40 stations, body → paint → final, cycle times 46–53&nbsp;s. The 12 dark stations emit nothing; three matter to the story — <span class="mono">S07</span> (the electrode-wear demo), <span class="mono">S22</span> (the designed bottleneck, 53&nbsp;s), and <span class="mono">S25</span> (the injected slowdown).</p>
+    <div class="strip" id="strip" aria-hidden="true"></div>
+    <div class="legend">
+      <span><i style="background:var(--surface-2);border:1px solid var(--faint)"></i>instrumented</span>
+      <span><i style="border:1px dashed var(--muted);background:transparent"></i>dark (emits nothing)</span>
+      <span><i style="background:var(--accent-soft);border:1px solid var(--accent)"></i>weld / demo</span>
+      <span><i style="background:var(--warn-soft);border:1px solid var(--warn)"></i>bottleneck</span>
+    </div>
+  </div>
+</section>
+
+<section id="build">
+  <div class="wrap">
+    <span class="eyebrow">03 · The build</span>
+    <h2>Seven days, each with a <em>falsifiable</em> exit test.</h2>
+    <p class="measure lead">Every day ends on a number the harness can check, not a claim. Results shown are from the paper-scale run (seed 20260822).</p>
+
+    <div class="days">
+      <article class="day">
+        <div class="head"><span class="num">Day 1</span><h3>Build a believable factory</h3></div>
+        <div class="gm">
+          <div><span>Goal</span><p>A 40-station line with log-normal cycle noise, tip wear, lot fit-up, random faults and in-line audit — reproducible from a seed.</p></div>
+          <div><span>Method</span><p>Discrete-event serial line with buffers, blocking and starving; hidden degradation model drives weld quality.</p></div>
+        </div>
+        <div class="result"><span class="metric">62.11 u/h · takt 57.96 s · defect 0.336% · 0 dark leaks</span><span class="verdict">reproducible ✓</span></div>
+      </article>
+
+      <article class="day">
+        <div class="head"><span class="num">Day 2</span><h3>Quantify the blind spot</h3></div>
+        <div class="gm">
+          <div><span>Goal</span><p>Show how long an electrode-wear fault hides with no in-process weld sensor — the reason the twin needs to exist.</p></div>
+          <div><span>Method</span><p>One <span class="mono">S07</span> gun enters accelerated wear at unit 140; measure units built before the first undersized weld surfaces at audit.</p></div>
+        </div>
+        <div class="result"><span class="metric">median 43 units built blind · 43.5 min in-line latency</span><span class="verdict">motivates the twin</span></div>
+      </article>
+
+      <article class="day">
+        <div class="head"><span class="num">Day 3</span><h3>Find the bottleneck from events alone</h3></div>
+        <div class="gm">
+          <div><span>Goal</span><p>Rank the constraint station using only the event stream — and know when a method <em>can't</em> tell.</p></div>
+          <div><span>Method</span><p>Conventional utilisation vs Roser's Active Period Method vs shifting-bottleneck analysis.</p></div>
+        </div>
+        <div class="result"><span class="metric">utilisation top-two overlap at 1.44σ · APM cleanly picks S22 (sole 60%, total 82%)</span><span class="verdict">APM wins</span></div>
+      </article>
+
+      <article class="day">
+        <div class="head"><span class="num">Day 4</span><h3>Forecast the bottleneck before it bites</h3></div>
+        <div class="gm">
+          <div><span>Goal</span><p>Flag a developing slowdown before it shows up in throughput.</p></div>
+          <div><span>Method</span><p>Monte-Carlo the line forward from a Normal-Gamma posterior-predictive belief; inject +80% slowdown at <span class="mono">S25</span> and measure the lead time.</p></div>
+        </div>
+        <div class="result"><span class="metric">median lead 11.93 min ahead · n=200 · 0 censored (p10 11.1 / p90 14.6)</span><span class="verdict">early ✓</span></div>
+      </article>
+
+      <article class="day">
+        <div class="head"><span class="num">Day 5</span><h3>Catch electrode wear in-process</h3></div>
+        <div class="gm">
+          <div><span>Goal</span><p>Detect bad welds from the dynamic-resistance (DR) curve, and beat the SPC control-chart baseline.</p></div>
+          <div><span>Method</span><p>From-scratch Isolation Forest + autoencoder + SPC on 12 geometric DR features. Reported honestly under heavy class imbalance (12 scrap welds in ~17.5k).</p></div>
+        </div>
+        <div class="result"><span class="metric">92% of alerts are genuine wear · all scrap caught 8.4 min early · SPC caught 0/12</span><span class="verdict">beats SPC ✓</span></div>
+      </article>
+
+      <article class="day">
+        <div class="head"><span class="num">Day 6</span><h3>See the dark stations</h3></div>
+        <div class="gm">
+          <div><span>Goal</span><p>Put calibrated numbers on the 12 stations that emit nothing, and rank where a new sensor would pay off most.</p></div>
+          <div><span>Method</span><p>Virtual metrology from instrumented neighbours with 80% credible bands; Value-of-Information ranking for sensor placement.</p></div>
+        </div>
+        <div class="result"><span class="metric">80% band covered truth 79.4% of the time (n=200) · VoI ranks S20/S21 next</span><span class="verdict">well-calibrated ✓</span></div>
+      </article>
+
+      <article class="day">
+        <div class="head"><span class="num">Day 7</span><h3>Prove the recommendation is causal</h3></div>
+        <div class="gm">
+          <div><span>Goal</span><p>Test Roser's falsifiable claim: if APM says <span class="mono">S22</span> is the bottleneck X% of the time, a 1 s improvement there should move takt within a predicted band.</p></div>
+          <div><span>Method</span><p>Predict the ΔIAT band from shifting-% on the stock line, then causally probe the plant and check the measured gain lands inside it.</p></div>
+        </div>
+        <div class="result"><span class="metric">predicted [0.556, 0.773] s → measured mean gain 0.671 s</span><span class="verdict">inside band ✓</span></div>
+      </article>
+    </div>
+    <p class="note" style="margin-top:16px">Day 8 is the rehearsal / dress-run day.</p>
+  </div>
+</section>
+
+<section id="results">
+  <div class="wrap">
+    <span class="eyebrow">04 · Headline results</span>
+    <h2>The numbers, <em>as measured</em>.</h2>
+    <div class="kpis">
+      <div class="kpi"><div class="v">11.9<small> min</small></div><div class="l">Median bottleneck lead time (n=200)</div></div>
+      <div class="kpi"><div class="v">92<small>%</small></div><div class="l">Detector alerts that are genuine electrode wear</div></div>
+      <div class="kpi"><div class="v">8.4<small> min</small></div><div class="l">Wear flagged before the first scrap weld</div></div>
+      <div class="kpi"><div class="v">79.4<small>%</small></div><div class="l">80% band coverage on dark stations</div></div>
+      <div class="kpi"><div class="v">0.671<small> s</small></div><div class="l">Measured takt gain, inside the predicted band</div></div>
+      <div class="kpi"><div class="v">0.987</div><div class="l">Detector ROC-AUC vs SPC 0.983</div></div>
+    </div>
+    <p class="note measure" style="margin-top:18px">Regenerate any of these with <code>bash run_all.sh</code>; they are written verbatim to <code>results.json</code>.</p>
+  </div>
+</section>
+
+<section id="rigor">
+  <div class="wrap">
+    <span class="eyebrow">05 · The honesty &amp; rigor pass</span>
+    <h2>Where we made the story <em>truer</em>.</h2>
+    <p class="measure lead">A review pass hardened the reporting without touching the plant physics or the twin's models — the improvements are all in <em>how results are measured and shown</em>.</p>
+
+    <h3 style="margin-top:22px">Day 5 detector: an honest headline</h3>
+    <div class="ba">
+      <div class="col before">
+        <h4>Before — flattering</h4>
+        <p class="big">7% precision</p>
+        <p>ROC-AUC 0.987 and "FAR 0.59%" hid the real per-weld precision. Under a 12-in-17,500 class imbalance, both numbers look great while the operating point is poor.</p>
+      </div>
+      <div class="col after">
+        <h4>After — honest</h4>
+        <p class="big">92% real alerts</p>
+        <p>Average Precision reported alongside AUC, and every alert classified: <b>8 confirmed scrap + 94 pre-scrap early warnings</b> on the known worn electrode, and only <b>9 genuine false alarms</b> in 13,140 normal welds.</p>
+      </div>
+    </div>
+    <p class="measure note" style="margin-top:14px">The 103 apparent "false positives" were the electrode's own degradation ramp — real early warnings, not errors. A precision–recall sweep now exposes the trade-off, and a recommended operating point catches every scrap weld 8.4 min before the first defect.</p>
+
+    <div class="split" style="margin-top:22px">
+      <div class="box"><h3>Forecast, tightened</h3><p class="note">Replaced a nested per-slice simulation and a guard-loop hack with one clean rollout per sample using line callbacks — <b>identical lead time</b> (median ~12 min), far clearer code.</p></div>
+      <div class="box"><h3>Isolation gate, hardened</h3><p class="note">The blindness check now scans code with comments stripped, reports <span class="mono">file:line</span> and a reason per violation, and the dead no-op branch is gone. Verified with positive and negative tests.</p></div>
+      <div class="box"><h3>Paper-scale evidence</h3><p class="note">Re-ran the full suite at n=200 for tighter confidence intervals: Day-4 p90 tightened 18.5 → 14.6 min; Day-6 coverage 79.4% — well-calibrated at the larger sample.</p></div>
+      <div class="box"><h3>Chapter 06 wired in</h3><p class="note">The orphaned interactive console is now Chapter 06 across the whole site — in the dashboard, in the standalone nav bar, and reachable at <span class="mono">/ui</span>.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="deliverables">
+  <div class="wrap">
+    <span class="eyebrow">06 · Deliverables</span>
+    <h2>Two deliverables in <em>one</em> repository.</h2>
+    <div class="deliv">
+      <div class="dcard">
+        <span class="tag">Deliverable 1 · Round 1</span>
+        <h3>The story dashboard</h3>
+        <p class="note">A static, no-build walkthrough that turns the concept into a six-chapter narrative anyone can click through — deployed on Vercel.</p>
+        <ul>
+          <li>01 Opening · 02 Sensing · 03 Live twin · 04 Architecture · 05 Setup</li>
+          <li><b>06 Drive it yourself</b> — the interactive persona console (<span class="mono">/ui</span>)</li>
+          <li>One shared nav bar + an iframe "chapter" shell; each scene keeps its own animation</li>
+          <li>Pure static: <span class="mono">index.html</span>, <span class="mono">pages/</span>, <span class="mono">css/</span>, <span class="mono">js/</span></li>
+        </ul>
+      </div>
+      <div class="dcard">
+        <span class="tag">Deliverable 2 · Round 2 · v0.7.1</span>
+        <h3>The twin engine</h3>
+        <p class="note">The sensor-poor digital-twin engine — plant, twin, harness — with zero runtime dependencies. Every estimator is written from scratch.</p>
+        <ul>
+          <li>Isolation Forest, autoencoder, SPC — hand-built</li>
+          <li>Normal-Gamma conjugate Bayesian belief with Student-t predictive</li>
+          <li>Active Period Method + shifting-bottleneck analysis</li>
+          <li>Monte-Carlo forecasting on a shared serial-line simulator</li>
+          <li>Isolation gate enforced before every run</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 style="margin:28px 0 10px">Repository map</h3>
+    <div class="tree">
+<pre><span class="a">plant/</span>    the factory — kernel, weld synthesis, hidden degradation, layout   <span class="c"># ground truth</span>
+<span class="a">twin/</span>     the estimator — ingest, belief, forecast, detect, virtual, apm     <span class="c"># blind</span>
+<span class="a">harness/</span>  the referee — isolation gate + the Day 1–7 scorers                 <span class="c"># sees both</span>
+<span class="a">lib/</span>      shared serial-line mechanics + seeded RNG
+<span class="a">ui/</span>       Chapter 06 — the interactive "Drive it yourself" console
+<span class="a">pages/ css/ js/</span>  the Round-1 story dashboard
+run_all.sh · write_results.js · results*.json   <span class="c"># suite + measured output</span></pre>
+    </div>
+  </div>
+</section>
+
+<section id="run">
+  <div class="wrap">
+    <span class="eyebrow">07 · Run, reproduce, deploy</span>
+    <h2>Everything is <em>one command</em> away.</h2>
+    <div class="cmd">
+      <div class="row"><code>bash run_all.sh</code><span>full suite → results.json</span></div>
+      <div class="row"><code>npm run test:fast</code><span>Days 1–3 only</span></div>
+      <div class="row"><code>LEAD_N=200 VIRT_N=200 bash run_all.sh</code><span>paper-scale, tighter CIs</span></div>
+      <div class="row"><code>node harness/check_isolation.js</code><span>enforce the blindness contract</span></div>
+      <div class="row"><code>npm run ui</code><span>serve the interactive console :4173</span></div>
+      <div class="row"><code>python -m http.server 8765</code><span>serve the story dashboard</span></div>
+    </div>
+    <div class="split" style="margin-top:8px">
+      <div class="box"><h3>What deploys to Vercel</h3><p class="note">The <b>static front-end</b> — dashboard + interactive console — is browser-only and Vercel-ready (<span class="mono">vercel.json</span>, no build step, <span class="mono">cleanUrls</span>). Import the repo, framework "Other", deploy — or merge to <span class="mono">main</span> and the Git integration auto-deploys.</p></div>
+      <div class="box warn"><h3>What does <em>not</em> run on Vercel</h3><p class="note">The engine (<span class="mono">plant/ twin/ harness/</span>) is Node scripts, not a web service. They produce <code>results.json</code> locally or in CI; the site just displays those numbers.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="mentor">
+  <div class="wrap">
+    <span class="eyebrow">08 · For reviewers</span>
+    <h2>What to look at, and what's <em>honest to flag</em>.</h2>
+    <div class="split">
+      <div class="box">
+        <h3>Strongest evidence</h3>
+        <ul class="tick">
+          <li>The isolation contract is enforced in code, not just claimed</li>
+          <li>Every headline number traces to <code>results.json</code> from a fixed seed</li>
+          <li>Baselines are beaten on their own terms (APM &gt; utilisation; detector &gt; SPC)</li>
+          <li>Methods that can't separate are reported as such (Day 3, 1.44σ)</li>
+        </ul>
+      </div>
+      <div class="box warn">
+        <h3>Stated limitations</h3>
+        <ul class="tick">
+          <li>Scrap is rare (12 welds) — precision–recall is the honest lens, not raw FAR</li>
+          <li>The isolation gate is a code-level guard, not a sandbox</li>
+          <li>The plant is synthetic; numbers are internally valid, not yet field-validated</li>
+          <li>Day 8 rehearsal and broader-seed sweeps are the natural next step</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>DigitalTwin.ai · Round 2 prototype · v0.7.1</span>
+    <span class="mono">seed 20260822 · all stages pass · numbers from results.json</span>
+  </div>
+</footer>
+
+<script>
+  // theme toggle (per-viewer, best-effort persistence)
+  (function(){
+    var root=document.documentElement, btn=document.getElementById('tg');
+    try{var s=localStorage.getItem('dt-theme'); if(s) root.setAttribute('data-theme',s);}catch(e){}
+    btn.addEventListener('click',function(){
+      var cur=root.getAttribute('data-theme');
+      var dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches;
+      var next=dark?'light':'dark';
+      root.setAttribute('data-theme',next);
+      try{localStorage.setItem('dt-theme',next);}catch(e){}
+    });
+  })();
+  // station strip: 40 stations, mark dark / demo / bottleneck
+  (function(){
+    var host=document.getElementById('strip'); if(!host) return;
+    var dark={3:1,10:1,13:1,14:1,15:1,20:1,21:1,23:1,26:1,32:1,33:1,39:1};
+    var weld={2:1,4:1,5:1,6:1,7:1,8:1,9:1,11:1,12:1,16:1,17:1,18:1};
+    for(var i=1;i<=40;i++){
+      var id='S'+String(i).padStart(2,'0');
+      var el=document.createElement('div'); el.className='st'; el.textContent=String(i);
+      if(i===22||i===25) el.className+=' slow';
+      else if(i===7) el.className+=' hot';
+      else if(dark[i]) el.className+=' dark';
+      else if(weld[i]) el.className+=' hot';
+      el.title=id+(dark[i]?' · dark':'');
+      host.appendChild(el);
+    }
+  })();
+</script>
