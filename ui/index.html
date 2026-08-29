@@ -57,21 +57,53 @@
           <h2>Momentary bottleneck</h2>
           <p class="metric" id="bn-now">—</p>
           <p class="sub" id="bn-sub">waiting for events</p>
+          <ul class="tickets" id="bn-ticket"></ul>
         </article>
         <article class="panel" data-show="supervisor manager leadership">
           <h2>Forecast <span class="muted">30 min</span></h2>
           <div class="bars" id="forecast-bars"></div>
         </article>
         <article class="panel" data-show="supervisor">
-          <h2>Alert queue</h2>
-          <ul class="alerts" id="alerts"></ul>
-          <p class="action" id="action">Recommended: —</p>
+          <h2>Weld tickets</h2>
+          <ul class="tickets" id="tickets"></ul>
+          <p class="sub">Accept = watch/babysit. Never a re-weld order and never a PLC write — see HITL-PRD.</p>
+        </article>
+        <article class="panel" data-show="supervisor manager">
+          <h2>Ask the twin</h2>
+          <div class="ask-presets" id="ask-presets">
+            <button type="button" class="chip preset" data-q="when does the next bottleneck form?">Next bottleneck?</button>
+            <button type="button" class="chip preset" data-q="what if station 4 runs 15% slower on night shift?">S04 −15% nights?</button>
+            <button type="button" class="chip preset" data-q="is the weld drifting?">Weld drifting?</button>
+            <button type="button" class="chip preset" data-q="where should the next sensor go?">Next sensor?</button>
+          </div>
+          <form id="ask-form" class="ask-form">
+            <input id="ask-input" type="text" placeholder="Ask about the line…" autocomplete="off" />
+            <button type="submit" class="btn tiny">Ask</button>
+          </form>
+          <div id="ask-answer" class="ask-answer" hidden>
+            <p class="evidence" id="ask-evidence"></p>
+            <p class="ask-text" id="ask-text"></p>
+            <button type="button" class="btn tiny ghost" id="ask-promote" hidden>Promote to ticket</button>
+          </div>
         </article>
         <article class="panel" data-show="manager">
           <h2>Bottleneck migration</h2>
           <div class="migrate" id="migrate"></div>
           <h2 class="spaced">Sensor ROI</h2>
           <ol class="voi" id="voi"></ol>
+          <h2 class="spaced">Maintenance windows</h2>
+          <ul class="windows" id="windows"></ul>
+          <p class="sub" id="missed-sla">0 missed SLA this shift</p>
+        </article>
+        <article class="panel" data-show="manager">
+          <h2>False alarms &amp; freeze</h2>
+          <p class="metric" id="fa-pct">—</p>
+          <p class="sub" id="fa-sub">operational precision this run</p>
+          <button type="button" class="btn tiny ghost" id="freeze-toggle">Freeze AE confirm</button>
+          <p class="sub" id="freeze-state">Not frozen.</p>
+          <h2 class="spaced">Audit log</h2>
+          <p class="sub" id="audit-count">0 entries</p>
+          <button type="button" class="btn tiny ghost" id="audit-export">Export audit log</button>
         </article>
         <article class="panel" data-show="manager leadership">
           <h2>Calibration</h2>
@@ -92,13 +124,18 @@
 
     <footer class="foot">
       <p>
-        Measured claims are from <code>results.json</code> (harness). The live strip is an interactive
-        driver for personas — alert animation is labelled mockup unless wired to a streamed twin.
+        Measured claims are from <code>results.json</code> (harness). The drift/coverage/buffer sliders
+        drive a synthetic demo shift; every ticket, Ask answer, and audit-log line is real client-side
+        logic — Accept/Defer/Dismiss, the copilot's 8 tools, and the maintenance-window tracker all run for real,
+        they just run against a simulated shift instead of a live MQTT feed.
       </p>
       <pre id="results-snip">loading results…</pre>
     </footer>
   </main>
   <script src="/js/nav.js"></script>
+  <script src="hitl.js"></script>
+  <script src="window.js"></script>
+  <script src="copilot.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

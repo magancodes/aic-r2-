@@ -265,6 +265,94 @@ h1 {
   to { opacity: 1; transform: none; }
 }
 
+/* ---- HITL tickets (Stage 1/2 Accept/Defer/Dismiss) ---- */
+.tickets { list-style: none; margin: 0.6rem 0 0; padding: 0; display: grid; gap: 0.55rem; }
+.ticket {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.6rem 0.7rem;
+  font-size: 0.8rem;
+  animation: slide 0.3s ease both;
+}
+.ticket.empty { color: var(--muted); border-style: dashed; text-align: center; }
+.ticket.accepted { border-left: 3px solid var(--ok); }
+.ticket.deferred { border-left: 3px solid var(--warn); }
+.ticket.dismissed, .ticket.sla_timeout { border-left: 3px solid var(--bad); opacity: 0.75; }
+.ticket.proposed { border-left: 3px solid var(--accent); }
+.ticket-head {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.3rem;
+}
+.ticket-id { color: var(--accent-2); }
+.ticket-station { color: var(--ink); }
+.ticket-state { margin-left: auto; }
+.ticket-text { margin: 0 0 0.5rem; color: var(--ink); line-height: 1.4; }
+.ticket-verdict { margin: 0; color: var(--muted); font-size: 0.72rem; font-family: var(--font-mono); }
+.ticket-verbs { display: flex; gap: 0.4rem; flex-wrap: wrap; transition: opacity 0.2s ease; }
+.ticket-reasons { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-top: 0.4rem; }
+.chip.reason {
+  font: 500 0.68rem/1 var(--font-mono);
+  padding: 0.32rem 0.5rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.chip.reason:hover { color: var(--ink); border-color: var(--accent); }
+.chip.preset {
+  font: 500 0.7rem/1 var(--font-mono);
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.chip.preset:hover { color: var(--ink); border-color: var(--accent); }
+
+.btn.tiny {
+  font-size: 0.68rem;
+  padding: 0.4rem 0.6rem;
+  letter-spacing: 0.04em;
+}
+.btn.tiny.accept { background: var(--ok); border-color: var(--ok); color: #06231a; }
+.btn.tiny.ghost.bad { border-color: var(--bad); color: var(--bad); }
+.btn.tiny.is-active { background: var(--warn); border-color: var(--warn); color: #241300; }
+
+/* ---- Ask panel (Stage 4 copilot) ---- */
+.ask-presets { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.6rem; }
+.ask-form { display: flex; gap: 0.5rem; }
+.ask-form input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font: 400 0.85rem/1 var(--font-mono);
+  padding: 0.55rem 0.7rem;
+}
+.ask-form input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ask-answer { margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px dashed var(--line); }
+.evidence { margin: 0 0 0.35rem; color: var(--accent-2); font-family: var(--font-mono); font-size: 0.72rem; }
+.ask-text { margin: 0 0 0.5rem; color: var(--ink); font-size: 0.85rem; line-height: 1.45; }
+
+/* ---- Maintenance windows (Stage 0/3) ---- */
+.windows { list-style: none; margin: 0.5rem 0 0; padding: 0; display: grid; gap: 0.4rem; }
+.window-row { display: flex; align-items: center; gap: 0.5rem; }
+.chip.win {
+  font: 500 0.68rem/1 var(--font-mono);
+  padding: 0.32rem 0.55rem;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.chip.win.acted, .chip.win.graded { color: var(--ok); border-color: var(--ok); }
+.chip.win.retired { opacity: 0.55; }
+
 @media (max-width: 860px) {
   .controls, .panels { grid-template-columns: 1fr; }
   .top { flex-direction: column; align-items: flex-start; }

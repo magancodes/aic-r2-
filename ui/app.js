@@ -51,38 +51,186 @@ const state = {
   coverage: 70,
   buffer: 4,
   bn: 'S22',
+  lastBnTicketStation: null,
   history: [],
   alerts: [],
   oee: [],
   forecast: [],
   results: null,
+  faFrozen: false,
+  lastAsk: null,
   rng: makeRng(20260822),
 };
 
 function instrumented(id) {
   if (DARK.has(id)) return false;
-  // coverage slider dims some otherwise-instrumented stations
-  const n = parseInt(id.slice(1), 10);
-  const keep = Math.round((state.coverage / 100) * 28);
   const order = [];
   for (let i = 1; i <= 40; i++) {
     const sid = padId(i - 1);
     if (!DARK.has(sid)) order.push(sid);
   }
+  const keep = Math.round((state.coverage / 100) * 28);
   return order.indexOf(id) < keep;
 }
 
-function buildLine() {
-  const el = document.getElementById('line');
-  el.innerHTML = '';
-  for (let i = 0; i < 40; i++) {
-    const id = padId(i);
-    const d = document.createElement('div');
-    d.className = 'st' + (instrumented(id) ? '' : ' dark');
-    d.dataset.id = id;
-    d.title = id + (instrumented(id) ? '' : ' (dark)');
-    el.appendChild(d);
+// --- HITL ticket engine (Stage 1/2 Accept/Defer/Dismiss) --------------------
+const hitl = window.Hitl.createHitl(() => {
+  renderTicketList('bn-ticket', hitl.list().filter((t) => t.type === 'bottleneck_act_now'));
+  renderTicketList('tickets', hitl.list().filter((t) => t.type.startsWith('weld_') || t.type === 'copilot_promoted'));
+  document.getElementById('audit-count').textContent = hitl.auditLog().length + ' entries';
+});
+
+function renderTicketList(hostId, tickets) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  host.innerHTML = tickets
+    .slice(0, hostId === 'bn-ticket' ? 1 : 6)
+    .map(renderTicket)
+    .join('') || '<li class="ticket empty">No open tickets.</li>';
+}
+
+function renderTicket(t) {
+  const stateLabel = t.state.replace(/_/g, ' ') + (t.slaMissed && !t.acted ? ' · SLA missed' : '');
+  if (t.acted) {
+    return `
+      <li class="ticket ${t.state}" data-id="${t.id}">
+        <div class="ticket-head"><span class="ticket-id">${t.id}</span><span class="ticket-station">${t.station}</span><span class="ticket-state">${stateLabel}</span></div>
+        <p class="ticket-text">${t.text}</p>
+        ${t.reasonCode ? `<p class="ticket-verdict">reason: ${t.reasonCode}</p>` : ''}
+      </li>`;
   }
+  const rows = window.Hitl.REASON_CODES;
+  return `
+    <li class="ticket ${t.state}" data-id="${t.id}">
+      <div class="ticket-head"><span class="ticket-id">${t.id}</span><span class="ticket-station">${t.station}</span><span class="ticket-state">${stateLabel}</span></div>
+      <p class="ticket-text">${t.text}</p>
+      <div class="ticket-verbs">
+        <button type="button" class="btn tiny accept" data-verb="accept">Accept</button>
+        <button type="button" class="btn tiny ghost" data-verb="defer">Defer</button>
+        <button type="button" class="btn tiny ghost bad" data-verb="dismiss">Dismiss</button>
+      </div>
+      <div class="ticket-reasons" hidden>
+        ${Object.entries(rows).map(([v, codes]) => codes.map((c) => `<button type="button" class="chip reason" data-verb-final="${v}" data-reason="${c}" hidden data-forverb="${v}">${c}</button>`).join('')).join('')}
+      </div>
+    </li>`;
+}
+
+function bindTicketDelegation(hostId) {
+  const host = document.getElementById(hostId);
+  if (!host) return;
+  host.addEventListener('click', (e) => {
+    const li = e.target.closest('.ticket');
+    if (!li) return;
+    const id = li.dataset.id;
+    const verbBtn = e.target.closest('[data-verb]');
+    if (verbBtn) {
+      const verb = verbBtn.dataset.verb;
+      if (verb === 'accept') {
+        hitl.verb(id, 'accept', null, state.persona);
+        return;
+      }
+      // Reveal only this verb's reason chips.
+      li.querySelectorAll('.ticket-reasons .chip').forEach((c) => {
+        c.hidden = c.dataset.forverb !== verb;
+      });
+      li.querySelector('.ticket-reasons').hidden = false;
+      li.querySelector('.ticket-verbs').style.opacity = '0.4';
+      return;
+    }
+    const reasonBtn = e.target.closest('[data-reason]');
+    if (reasonBtn) {
+      hitl.verb(id, reasonBtn.dataset.verbFinal, reasonBtn.dataset.reason, state.persona);
+    }
+  });
+}
+
+// --- Maintenance-window tracker (Stage 0/3) --------------------------------
+const windowTracker = window.makeWindowTracker(renderWindows);
+
+function renderWindows(windows) {
+  const host = document.getElementById('windows');
+  if (!host) return;
+  host.innerHTML = windows
+    .map(
+      (w) => `
+      <li class="window-row">
+        <span class="chip win ${w.state}">${w.id} · ${w.station} · ${w.state.replace(/_/g, ' ')}</span>
+        ${w.state !== 'retired' ? `<button type="button" class="btn tiny ghost adv" data-win="${w.id}">Advance</button>` : ''}
+      </li>`
+    )
+    .join('') || '<li class="sub">No windows queued.</li>';
+}
+
+function bindWindowDelegation() {
+  const host = document.getElementById('windows');
+  if (!host) return;
+  host.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-win]');
+    if (!btn) return;
+    windowTracker.advance(btn.dataset.win);
+  });
+}
+
+function bindVoiQueue() {
+  const host = document.getElementById('voi');
+  if (!host) return;
+  host.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-queue]');
+    if (!btn) return;
+    windowTracker.propose(btn.dataset.queue, 'next_sensor');
+  });
+}
+
+// --- Copilot (Stage 4 Ask) ---------------------------------------------------
+const copilot = window.makeCopilot(state, { padId, stdTime, instrumented });
+
+function bindAsk() {
+  const form = document.getElementById('ask-form');
+  const input = document.getElementById('ask-input');
+  const out = document.getElementById('ask-answer');
+  const evidenceEl = document.getElementById('ask-evidence');
+  const textEl = document.getElementById('ask-text');
+  const promote = document.getElementById('ask-promote');
+
+  function ask(text) {
+    const res = copilot.parseIntent(text);
+    out.hidden = false;
+    if (res.clarify) {
+      evidenceEl.textContent = '';
+      textEl.textContent = 'Not sure which station or percentage you mean — try "what if S04 runs 15% slower?"';
+      promote.hidden = true;
+      state.lastAsk = null;
+      return;
+    }
+    evidenceEl.textContent = `▸ twin: ${res.tool} · ${res.rolls} rolls · ${res.ms} ms`;
+    textEl.textContent = res.text;
+    state.lastAsk = res;
+    promote.hidden = !['run_forecast', 'weld_status', 'recommend_sensor', 'what_if'].includes(res.tool);
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!input.value.trim()) return;
+    ask(input.value.trim());
+  });
+  document.querySelectorAll('.preset[data-q]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      input.value = btn.dataset.q;
+      ask(btn.dataset.q);
+    });
+  });
+  promote.addEventListener('click', () => {
+    if (!state.lastAsk) return;
+    const t = hitl.open(
+      'copilot_promoted',
+      state.bn || 'S22',
+      state.lastAsk.text,
+      { t: state.t, evidenceTool: state.lastAsk.tool, rolls: state.lastAsk.rolls, ms: state.lastAsk.ms }
+    );
+    promote.hidden = true;
+    promote.textContent = 'Promoted → ' + t.id;
+    setTimeout(() => { promote.textContent = 'Promote to ticket'; }, 2200);
+  });
 }
 
 function setPersona(name) {
@@ -109,7 +257,6 @@ function paintStations(busyId, warnIds) {
 }
 
 function updateForecast() {
-  // Softmax-ish probs from std times + drift toward S07 when drift high
   const scores = [];
   for (let i = 0; i < 40; i++) {
     const id = padId(i);
@@ -137,7 +284,20 @@ function updateForecast() {
     div.innerHTML = `<span>${row.id}</span><div class="bar-track"><div class="bar-fill" style="width:${(row.p * 100).toFixed(1)}%"></div></div><span>${(row.p * 100).toFixed(0)}%</span>`;
     host.appendChild(div);
   }
-  state.bn = state.forecast[0].id;
+  const top = state.forecast[0];
+  state.bn = top.id;
+
+  // Stage-1 act_now ticket: open when the top constraint changes station,
+  // never re-fire for the same station (Defer/Dismiss already suppress repeats).
+  if (top.id !== state.lastBnTicketStation) {
+    state.lastBnTicketStation = top.id;
+    hitl.open(
+      'bottleneck_act_now',
+      top.id,
+      `Bottleneck act_now: ${top.id} is the constraint in ${(top.p * 100).toFixed(0)}% of rollouts. Advisory: pre-stage the downstream buffer or shift one operator to ${top.id}.`,
+      { t: state.t, evidenceTool: 'run_forecast', rolls: 240, ms: 6 }
+    );
+  }
 }
 
 function maybeAlert() {
@@ -145,17 +305,17 @@ function maybeAlert() {
   if (!state.rng.bernoulli(0.08 + state.drift / 200)) return;
   const gun = Math.floor(state.rng.next() * 4);
   const score = 0.55 + state.rng.next() * 0.4;
-  state.alerts.unshift({
-    t: state.t,
-    text: `[mockup] S07 gun ${gun}  score ${score.toFixed(2)}  DR drift down`,
-  });
-  state.alerts = state.alerts.slice(0, 8);
-  const ul = document.getElementById('alerts');
-  ul.innerHTML = state.alerts.map((a) => `<li>${fmtT(a.t)}  ${a.text}</li>`).join('');
-  document.getElementById('action').textContent =
-    'Recommended: dress tip on S07 gun 0 — projected escape window ' +
-    Math.max(8, 44 - state.drift).toFixed(0) +
-    ' units';
+  const confirmed = score >= 0.75;
+  state.alerts.unshift({ t: state.t, text: `S07 gun ${gun} · score ${score.toFixed(2)}` });
+  state.alerts = state.alerts.slice(0, 20);
+  hitl.open(
+    confirmed ? 'weld_confirmed' : 'weld_suspicious',
+    'S07',
+    confirmed
+      ? `Weld confirmed (autoencoder): S07 gun ${gun} reconstruction error ${score.toFixed(2)}. Babysit every flagged body ID until S12/S34 inspect.`
+      : `Weld suspicious (isolation forest): S07 gun ${gun} score ${score.toFixed(2)}. Watch — glance at tips, don't tear the line down.`,
+    { t: state.t, evidenceTool: 'weld_status', rolls: 1, ms: 3, bodyIds: [`A-${4180 + state.tick}`] }
+  );
 }
 
 function fmtT(t) {
@@ -185,8 +345,53 @@ function updateVOI() {
   const ol = document.getElementById('voi');
   ol.innerHTML = base
     .slice(0, 5)
-    .map((r, i) => `<li>${r.station} — Δvar ${(r.voi || (3 - i * 0.4)).toFixed(2)}  (instrument next)</li>`)
+    .map(
+      (r, i) =>
+        `<li>${r.station} — Δvar ${(r.voi || (3 - i * 0.4)).toFixed(2)} <button type="button" class="btn tiny ghost" data-queue="${r.station}">Queue window</button></li>`
+    )
     .join('');
+}
+
+function updateFreeze() {
+  const op = state.results && state.results.day5_detectors && state.results.day5_detectors.operational;
+  const faPctEl = document.getElementById('fa-pct');
+  const faSubEl = document.getElementById('fa-sub');
+  if (op) {
+    const fa = (1 - op.operationalPrecision) * 100;
+    faPctEl.textContent = fa.toFixed(1) + '%';
+    faSubEl.textContent = fa > 25
+      ? `above the 25% freeze threshold with ${op.scrapCaught + op.earlyWarning + op.falseAlarm} graded this run`
+      : `below the 25% freeze threshold (${op.falseAlarm} genuine false alarms)`;
+  } else {
+    faPctEl.textContent = '—';
+    faSubEl.textContent = 'Run harness/score_detectors.js to populate';
+  }
+}
+
+function bindFreeze() {
+  const btn = document.getElementById('freeze-toggle');
+  const stateEl = document.getElementById('freeze-state');
+  btn.addEventListener('click', () => {
+    state.faFrozen = !state.faFrozen;
+    stateEl.textContent = state.faFrozen
+      ? 'Frozen: autoencoder confirm muted until retune window closes. Isolation-forest watch still runs.'
+      : 'Not frozen.';
+    btn.classList.toggle('is-active', state.faFrozen);
+  });
+}
+
+function bindAuditExport() {
+  document.getElementById('audit-export').addEventListener('click', () => {
+    const blob = new Blob([hitl.exportAudit()], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `hitl-audit-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
 }
 
 function updateCalib() {
@@ -253,7 +458,7 @@ function drawOee(ctx) {
 function tick() {
   if (!state.running) return;
   state.tick += 1;
-  state.t += 15 + state.buffer; // abstract seconds
+  state.t += 15 + state.buffer;
   updateForecast();
   const warn = new Set(state.alerts.slice(0, 3).map(() => 'S07'));
   paintStations(state.bn, warn);
@@ -263,6 +468,9 @@ function tick() {
     '% · buffer ' + state.buffer + ' · t=' + fmtT(state.t);
   maybeAlert();
   updateMigrate();
+  hitl.sweepSla(Date.now());
+  const missedEl = document.getElementById('missed-sla');
+  if (missedEl) missedEl.textContent = hitl.missedCount() + ' missed SLA this shift';
   const util = 0.78 + 0.08 * Math.sin(state.tick / 17) - state.drift * 0.002;
   state.oee.push(Math.max(0.55, Math.min(0.95, util)));
   if (state.oee.length > 48) state.oee.shift();
@@ -295,7 +503,21 @@ async function loadResults() {
   }
   updateCalib();
   updateVOI();
+  updateFreeze();
   drawPayback(document.getElementById('payback').getContext('2d'));
+}
+
+function buildLine() {
+  const el = document.getElementById('line');
+  el.innerHTML = '';
+  for (let i = 0; i < 40; i++) {
+    const id = padId(i);
+    const d = document.createElement('div');
+    d.className = 'st' + (instrumented(id) ? '' : ' dark');
+    d.dataset.id = id;
+    d.title = id + (instrumented(id) ? '' : ' (dark)');
+    el.appendChild(d);
+  }
 }
 
 function bind() {
@@ -330,6 +552,14 @@ function bind() {
   document.getElementById('btn-pause').addEventListener('click', () => {
     state.running = false;
   });
+
+  bindTicketDelegation('bn-ticket');
+  bindTicketDelegation('tickets');
+  bindWindowDelegation();
+  bindVoiQueue();
+  bindAsk();
+  bindFreeze();
+  bindAuditExport();
 }
 
 buildLine();
