@@ -53,6 +53,15 @@ const ROUTES = [
     crumb: "Day 1 through ongoing",
     src: "pages/setup.html",
   },
+  {
+    id: "drive",
+    num: "06",
+    label: "Drive it",
+    hint: "Run a shift yourself",
+    title: "Drive it yourself",
+    crumb: "Chapter 06 · personas",
+    src: "ui/index.html",
+  },
 ];
 
 const navEl = document.getElementById("nav");
