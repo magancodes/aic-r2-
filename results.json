@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-22T04:10:08.045Z",
+  "generatedAt": "2026-08-29T10:20:10.983Z",
   "seed": 20260822,
   "day1": {
     "throughput_u_per_h": 62.11,
@@ -11,7 +11,7 @@
     "escaped": 251,
     "darkLeaks": 0,
     "taktDrift_pct": 3.02,
-    "runtime_s": 0.33,
+    "runtime_s": 0.44,
     "reproducible": true
   },
   "day2": {
@@ -64,11 +64,11 @@
     }
   },
   "day4_leadtime": {
-    "n": 40,
-    "medianMin": 11.959602414429021,
-    "meanMin": 12.851046180186108,
-    "p10Min": 11.006694036860177,
-    "p90Min": 16.280639358551408,
+    "n": 200,
+    "medianMin": 11.934695106289352,
+    "meanMin": 12.746691958797875,
+    "p10Min": 11.068256931262118,
+    "p90Min": 14.56709681819967,
     "censored": 0,
     "target": "S25"
   },
@@ -79,33 +79,62 @@
       "ae": 0.9368,
       "spc": 0.9831
     },
+    "avg_precision": {
+      "scrap": 0.0685,
+      "scrap_spc": 0.0324,
+      "wornElectrode": 0.723
+    },
     "operating": {
       "tp": 8,
       "fp": 103,
       "fn": 4,
       "tn": 17405,
       "precision": 0.0721,
-      "recall": 0.6667,
-      "far": 0.0059,
-      "falseAlarmsPerHour": 18.39
+      "recall": 0.6667
+    },
+    "operational": {
+      "scrapCaught": 8,
+      "earlyWarning": 94,
+      "falseAlarm": 9,
+      "operationalPrecision": 0.9189,
+      "scrapRecall": 0.6667,
+      "genuineFar": 0.00068,
+      "genuineFalseAlarmsPerHour": 1.61,
+      "note": "102/111 alerts are genuine electrode wear (8 scrap + 94 pre-scrap early warnings); 9 genuine false alarms in 13140 normal welds."
+    },
+    "recommended": {
+      "threshold": 0.5634,
+      "scrapRecall": 1,
+      "wornPrecision": 0.8518,
+      "genuineFar": 0.01172,
+      "alerts": 1039,
+      "firstWornAlertUnit": 140,
+      "firstScrapUnit": 148,
+      "leadUnits": 8,
+      "leadMinutes": 8.4
+    },
+    "incidents": {
+      "total": 10,
+      "real": 4,
+      "false": 6,
+      "falsePerDay": 25.71
     },
     "spc_baseline": {
       "tp": 0,
       "fp": 13,
       "fn": 12,
       "precision": 0,
-      "recall": 0,
-      "far": 0.0007
+      "recall": 0
     },
     "beatsSPC": true,
     "defects": 12,
     "alerts": 111
   },
   "day6_virtual": {
-    "n": 40,
-    "overallCoverage80": 0.8042,
-    "overallPct": 80.4,
-    "sentence": "the 80% band covered truth 80.4% of the time over 40 runs",
+    "n": 200,
+    "overallCoverage80": 0.7942,
+    "overallPct": 79.4,
+    "sentence": "the 80% band covered truth 79.4% of the time over 200 runs",
     "voiTop5": [
       {
         "station": "S20",
@@ -195,7 +224,7 @@
       "lower": 0.5565,
       "upper": 0.7733
     },
-    "meanGain_s": 0.7975,
+    "meanGain_s": 0.671,
     "validated": true
   }
 }

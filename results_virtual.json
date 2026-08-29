@@ -1,68 +1,68 @@
 {
-  "n": 40,
+  "n": 200,
   "units": 900,
-  "overallCoverage80": 0.8042,
-  "overallPct": 80.4,
+  "overallCoverage80": 0.7942,
+  "overallPct": 79.4,
   "perStation": {
     "S03": {
-      "coverage80": 0.275,
-      "hits": 11,
-      "n": 40
+      "coverage80": 0.225,
+      "hits": 45,
+      "n": 200
     },
     "S10": {
-      "coverage80": 1,
-      "hits": 40,
-      "n": 40
+      "coverage80": 0.99,
+      "hits": 198,
+      "n": 200
     },
     "S13": {
       "coverage80": 1,
-      "hits": 40,
-      "n": 40
+      "hits": 200,
+      "n": 200
     },
     "S14": {
       "coverage80": 1,
-      "hits": 40,
-      "n": 40
+      "hits": 200,
+      "n": 200
     },
     "S15": {
       "coverage80": 1,
-      "hits": 40,
-      "n": 40
+      "hits": 200,
+      "n": 200
     },
     "S20": {
-      "coverage80": 1,
-      "hits": 40,
-      "n": 40
+      "coverage80": 0.95,
+      "hits": 190,
+      "n": 200
     },
     "S21": {
-      "coverage80": 1,
-      "hits": 40,
-      "n": 40
+      "coverage80": 0.95,
+      "hits": 190,
+      "n": 200
     },
     "S23": {
-      "coverage80": 0.05,
-      "hits": 2,
-      "n": 40
+      "coverage80": 0.03,
+      "hits": 6,
+      "n": 200
     },
     "S26": {
-      "coverage80": 0.475,
-      "hits": 19,
-      "n": 40
+      "coverage80": 0.5,
+      "hits": 100,
+      "n": 200
     },
     "S32": {
       "coverage80": 1,
-      "hits": 40,
-      "n": 40
+      "hits": 200,
+      "n": 200
     },
     "S33": {
       "coverage80": 1,
-      "hits": 40,
-      "n": 40
+      "hits": 200,
+      "n": 200
     },
     "S39": {
-      "coverage80": 0.85,
-      "hits": 34,
-      "n": 40
+      "coverage80": 0.885,
+      "hits": 177,
+      "n": 200
     }
   },
   "voiTop5": [
@@ -145,5 +145,5 @@
       "trust": 1
     }
   ],
-  "sentence": "the 80% band covered truth 80.4% of the time over 40 runs"
+  "sentence": "the 80% band covered truth 79.4% of the time over 200 runs"
 }

@@ -1,8 +1,11 @@
 {
   "units": 320,
   "accelAt": 140,
+  "accelGun": 0,
   "trainWelds": 11120,
   "testWelds": 17520,
+  "wornWelds": 4380,
+  "normalWelds": 13140,
   "defects": 12,
   "alerts": 111,
   "thresholds": {
@@ -16,23 +19,117 @@
     "ae": 0.9368,
     "spc": 0.9831
   },
+  "avg_precision": {
+    "scrap": 0.0685,
+    "scrap_spc": 0.0324,
+    "wornElectrode": 0.723
+  },
+  "pr_curve": [
+    {
+      "threshold": 0.4618,
+      "scrapPrecision": 0.0014,
+      "scrapRecall": 1,
+      "wornPrecision": 0.444,
+      "wornRecall": 0.8881,
+      "genuineFar": 0.3707,
+      "alerts": 8761
+    },
+    {
+      "threshold": 0.5141,
+      "scrapPrecision": 0.0034,
+      "scrapRecall": 1,
+      "wornPrecision": 0.7398,
+      "wornRecall": 0.592,
+      "genuineFar": 0.06941,
+      "alerts": 3505
+    },
+    {
+      "threshold": 0.5423,
+      "scrapPrecision": 0.0068,
+      "scrapRecall": 1,
+      "wornPrecision": 0.8135,
+      "wornRecall": 0.3256,
+      "genuineFar": 0.02489,
+      "alerts": 1753
+    },
+    {
+      "threshold": 0.5707,
+      "scrapPrecision": 0.0125,
+      "scrapRecall": 0.9167,
+      "wornPrecision": 0.87,
+      "wornRecall": 0.1742,
+      "genuineFar": 0.00868,
+      "alerts": 877
+    },
+    {
+      "threshold": 0.6167,
+      "scrapPrecision": 0.0452,
+      "scrapRecall": 0.6667,
+      "wornPrecision": 0.9605,
+      "wornRecall": 0.0388,
+      "genuineFar": 0.00053,
+      "alerts": 177
+    },
+    {
+      "threshold": 0.6314,
+      "scrapPrecision": 0.0562,
+      "scrapRecall": 0.4167,
+      "wornPrecision": 0.9888,
+      "wornRecall": 0.0201,
+      "genuineFar": 0.00008,
+      "alerts": 89
+    },
+    {
+      "threshold": 0.6551,
+      "scrapPrecision": 0.1053,
+      "scrapRecall": 0.1667,
+      "wornPrecision": 1,
+      "wornRecall": 0.0043,
+      "genuineFar": 0,
+      "alerts": 19
+    }
+  ],
   "operating": {
     "tp": 8,
     "fp": 103,
     "fn": 4,
     "tn": 17405,
     "precision": 0.0721,
-    "recall": 0.6667,
-    "far": 0.0059,
-    "falseAlarmsPerHour": 18.39
+    "recall": 0.6667
+  },
+  "operational": {
+    "scrapCaught": 8,
+    "earlyWarning": 94,
+    "falseAlarm": 9,
+    "operationalPrecision": 0.9189,
+    "scrapRecall": 0.6667,
+    "genuineFar": 0.00068,
+    "genuineFalseAlarmsPerHour": 1.61,
+    "note": "102/111 alerts are genuine electrode wear (8 scrap + 94 pre-scrap early warnings); 9 genuine false alarms in 13140 normal welds."
+  },
+  "incidents": {
+    "total": 10,
+    "real": 4,
+    "false": 6,
+    "falsePerDay": 25.71
+  },
+  "recommended": {
+    "threshold": 0.5634,
+    "scrapRecall": 1,
+    "wornPrecision": 0.8518,
+    "genuineFar": 0.01172,
+    "alerts": 1039,
+    "firstWornAlertUnit": 140,
+    "firstScrapUnit": 148,
+    "leadUnits": 8,
+    "leadMinutes": 8.4
   },
   "spc_baseline": {
     "tp": 0,
     "fp": 13,
     "fn": 12,
     "precision": 0,
-    "recall": 0,
-    "far": 0.0007
+    "recall": 0
   },
   "beatsSPC": true
 }
