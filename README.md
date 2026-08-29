@@ -29,7 +29,7 @@ Two programs, one contract:
 - `lib/` — shared serial-line mechanics
 - `ui/` — chapter 06 interactive demo
 
-Current release: **0.7.0** (Days 1–7). See [CHANGELOG.md](CHANGELOG.md).
+Current release: **0.7.1** (Days 1–7). See [CHANGELOG.md](CHANGELOG.md).
 
 ```bash
 bash run_all.sh          # full suite

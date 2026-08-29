@@ -192,6 +192,56 @@ class Detector {
     }
     return out;
   }
+
+  /**
+   * Collapse a raw alert stream into incidents an operator would actually see.
+   * Consecutive alerts on the same (station, gun) whose unit index is within
+   * `gapUnits` of the previous one belong to the same sustained alarm.
+   * @param {object[]} alerts rows with {station, gun, unit, t, score}
+   * @param {object} [opts]
+   * @param {number} [opts.gapUnits=8] max unit gap that still counts as one incident
+   * @returns {Array<{station,gun,startUnit,endUnit,startT,endT,count,peakScore}>}
+   */
+  static clusterIncidents(alerts, opts = {}) {
+    const gapUnits = opts.gapUnits != null ? opts.gapUnits : 8;
+    const sorted = alerts
+      .slice()
+      .sort((a, b) =>
+        a.station === b.station
+          ? a.gun === b.gun
+            ? a.unit - b.unit
+            : a.gun - b.gun
+          : String(a.station).localeCompare(String(b.station))
+      );
+    const incidents = [];
+    let cur = null;
+    for (const a of sorted) {
+      if (
+        cur &&
+        cur.station === a.station &&
+        cur.gun === a.gun &&
+        a.unit - cur.endUnit <= gapUnits
+      ) {
+        cur.endUnit = a.unit;
+        cur.endT = a.t;
+        cur.count += 1;
+        cur.peakScore = Math.max(cur.peakScore, a.score);
+      } else {
+        cur = {
+          station: a.station,
+          gun: a.gun,
+          startUnit: a.unit,
+          endUnit: a.unit,
+          startT: a.t,
+          endT: a.t,
+          count: 1,
+          peakScore: a.score,
+        };
+        incidents.push(cur);
+      }
+    }
+    return incidents;
+  }
 }
 
 function trainDetector(layout, normalWelds, seed = 7) {

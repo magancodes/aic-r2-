@@ -171,7 +171,11 @@ const det = readJson('./results_detectors.json');
 out.day5_detectors = det
   ? {
       roc_auc: det.roc_auc,
+      avg_precision: det.avg_precision,
       operating: det.operating,
+      operational: det.operational,
+      recommended: det.recommended,
+      incidents: det.incidents,
       spc_baseline: det.spc_baseline,
       beatsSPC: det.beatsSPC,
       defects: det.defects,

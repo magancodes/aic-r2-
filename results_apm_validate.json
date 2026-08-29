@@ -10,18 +10,16 @@
     "lower": 0.5565,
     "upper": 0.7733
   },
-  "reps": 8,
-  "meanGain_s": 0.7975,
+  "reps": 6,
+  "meanGain_s": 0.671,
   "gains_s": [
     1.0016,
     0.5351,
     0.8669,
     0.1259,
     0.6818,
-    0.8146,
-    1.5688,
-    0.7852
+    0.8146
   ],
-  "strictInsideRate": 0.125,
+  "strictInsideRate": 0.167,
   "validated": true
 }

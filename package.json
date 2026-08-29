@@ -1,6 +1,6 @@
 {
   "name": "digitaltwin",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "private": true,
   "description": "Sensor-poor assembly-line digital twin — Round 2 prototype",
   "scripts": {
