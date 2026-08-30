@@ -16,6 +16,6 @@
     "day7": "node harness/validate_apm.js",
     "leadtime": "node harness/measure_leadtime.js",
     "results": "node write_results.js",
-    "ui": "npx --yes serve ui -p 4173"
+    "ui": "npx --yes serve . -p 4173"
   }
 }
